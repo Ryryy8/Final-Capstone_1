@@ -1,0 +1,3889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AssessPro - Professional Scheduling for Assessors</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    color: #333;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Color Variables */
+:root {
+    --primary-green: #2d6e3f;
+    --secondary-green: #4a9960;
+    --light-green: #7cb884;
+    --accent-green: #95d5a3;
+    --dark-green: #1e4a2a;
+    --very-light-green: #f0f8f2;
+    --hero-bg: url('images/BG final.jpg');
+    --white: #ffffff;
+    --gray-100: #f8f9fa;
+    --gray-300: #e9ecef;
+    --gray-500: #6c757d;
+    --gray-700: #495057;
+    --gray-900: #212529;
+}
+
+/* Navigation */
+.navbar {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: transparent;
+    backdrop-filter: blur(6px);
+    border-bottom: none;
+    z-index: 1000;
+    transition: all 0.25s ease;
+}
+
+.navbar.scrolled {
+    background: rgba(0,0,0,0.35);
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.12);
+}
+
+.nav-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 70px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--white);
+}
+
+.logo-img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    vertical-align: middle;
+}
+
+.logo i {
+    font-size: 2rem;
+}
+
+.nav-menu {
+    display: flex;
+    list-style: none;
+    gap: 24px;
+    align-items: center;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: rgba(255,255,255,0.95);
+    font-weight: 600;
+    transition: color 0.2s ease;
+    position: relative;
+}
+
+.nav-link:hover {
+    color: var(--primary-green);
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: var(--primary-green);
+    transition: width 0.3s ease;
+}
+
+.nav-link:hover::after {
+    width: 100%;
+}
+
+.cta-button {
+    background: var(--primary-green);
+    color: var(--white) !important;
+    padding: 10px 20px;
+    border-radius: 30px;
+    transition: all 0.2s ease;
+    box-shadow: 0 6px 18px rgba(45,110,63,0.18);
+}
+
+.cta-button::after {
+    display: none;
+}
+
+.cta-button:hover {
+    background: var(--dark-green);
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(45, 110, 63, 0.3);
+}
+
+/* Mobile Menu */
+.hamburger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    gap: 3px;
+}
+
+.hamburger span {
+    width: 25px;
+    height: 3px;
+    background: var(--primary-green);
+    transition: all 0.3s ease;
+}
+
+.hamburger.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.hamburger.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Hero Section */
+
+/* Hero Section - updated to match screenshot (full-bleed image + large white heading) */
+.hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding: 120px 20px 50px; /* keep space for fixed navbar */
+    overflow: hidden;
+    /* hero background uses CSS var --hero-bg which can be overridden inline */
+    background-image: var(--hero-bg);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+
+/* subtle dark overlay so white text reads well */
+.hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 0;
+}
+
+.hero-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: block;
+    position: relative;
+    z-index: 1; /* above overlay */
+}
+
+.hero-text h1 {
+    font-size: clamp(2.6rem, 6.5vw, 5rem);
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1.0;
+    margin: 0 0 10px 0;
+    letter-spacing: -0.6px;
+    text-shadow: 0 6px 18px rgba(0,0,0,0.6);
+}
+
+.hero-text p {
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 30px;
+    line-height: 1.4;
+}
+
+.hero-text {
+    max-width: 60%;
+    padding-left: 48px;
+}
+
+.hero-buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 15px 30px;
+    border: none;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--primary-green);
+    color: var(--white);
+}
+
+.btn-primary:hover {
+    background: var(--dark-green);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(45, 110, 63, 0.3);
+}
+
+.btn-secondary {
+    background: transparent;
+    color: var(--primary-green);
+    border: 2px solid var(--primary-green);
+}
+
+.btn-secondary:hover {
+    background: var(--primary-green);
+    color: var(--white);
+    transform: translateY(-3px);
+}
+
+.btn-primary.large {
+    padding: 18px 40px;
+    font-size: 1.2rem;
+}
+
+/* Dashboard Preview */
+.dashboard-preview {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 0;
+    box-shadow: 0 20px 60px rgba(45, 110, 63, 0.15);
+    overflow: hidden;
+    transform: perspective(1000px) rotateY(-5deg) rotateX(5deg);
+    transition: transform 0.3s ease;
+}
+
+.dashboard-preview:hover {
+    transform: perspective(1000px) rotateY(-2deg) rotateX(2deg);
+}
+
+.preview-header {
+    background: var(--primary-green);
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+}
+
+.preview-dots {
+    display: flex;
+    gap: 8px;
+}
+
+.preview-dots span {
+    width: 12px;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+}
+
+.preview-content {
+    padding: 30px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+    margin-bottom: 25px;
+}
+
+.calendar-item {
+    height: 40px;
+    background: var(--gray-100);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.calendar-item.active {
+    background: var(--primary-green);
+    animation: pulse 2s infinite;
+}
+
+.calendar-item.scheduled {
+    background: var(--accent-green);
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.schedule-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.schedule-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 0.9rem;
+    color: var(--gray-700);
+}
+
+.schedule-dot {
+    width: 10px;
+    height: 10px;
+    background: var(--secondary-green);
+    border-radius: 50%;
+    animation: fadeIn 2s ease-in-out infinite alternate;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0.5; }
+    to { opacity: 1; }
+}
+
+/* Background Shapes */
+.hero-bg-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: -1;
+}
+
+.shape {
+    position: absolute;
+    background: linear-gradient(45deg, var(--accent-green), var(--light-green));
+    border-radius: 50%;
+    opacity: 0.1;
+    animation: float 6s ease-in-out infinite;
+}
+
+.shape1 {
+    width: 200px;
+    height: 200px;
+    top: 10%;
+    right: 10%;
+    animation-delay: 0s;
+}
+
+.shape2 {
+    width: 150px;
+    height: 150px;
+    bottom: 20%;
+    left: 10%;
+    animation-delay: 2s;
+}
+
+.shape3 {
+    width: 100px;
+    height: 100px;
+    top: 60%;
+    right: 20%;
+    animation-delay: 4s;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+}
+
+/* About Section */
+.about {
+    padding: 100px 0;
+    background: var(--white);
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 60px;
+}
+
+.about-header h2 {
+    font-size: 3.2rem;
+    font-weight: 800;
+    color: var(--primary-green);
+    margin-bottom: 12px;
+}
+
+.about-header p {
+    font-size: 1.05rem;
+    color: var(--gray-500);
+}
+
+.about-content {
+    display: grid;
+    gap: 60px;
+}
+
+/* New about layout cards and columns */
+.about-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    align-items: start;
+    margin-bottom: 36px;
+}
+
+.about-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+}
+
+.about-card h4 {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 1.05rem;
+    color: var(--gray-800);
+}
+
+.about-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-top: 10px;
+}
+
+/* stacked mobile-specific layout (hidden by default) */
+.about-stack {
+    display: none;
+}
+
+.about-col h5 {
+    text-align: center;
+    color: var(--primary-green);
+    margin-bottom: 14px;
+    font-size: 1.05rem;
+}
+
+.about-col h5 i {
+    margin-right: 8px;
+    color: var(--primary-green);
+    font-size: 1.2rem;
+    vertical-align: middle;
+}
+
+.about-col p {
+    color: var(--gray-700);
+    line-height: 1.8;
+    text-align: justify;
+}
+
+.about-col ul {
+    list-style: none;
+    padding: 0;
+    color: var(--gray-700);
+    text-align: center;
+}
+
+.about-col ul li {
+    margin-bottom: 8px;
+}
+
+@media (max-width: 900px) {
+    .about-cards, .about-columns {
+        grid-template-columns: 1fr;
+    }
+    .about-card img {
+        height: 180px;
+    }
+    /* show stacked view and hide desktop grids */
+    .about-cards, .about-columns {
+        display: none;
+    }
+    .about-stack {
+        display: block;
+    }
+    .about-stack .stack-item {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 26px;
+    }
+    .about-stack .stack-item img {
+        width: 100%;
+        height: auto;
+        border-radius: 12px;
+        object-fit: cover;
+    }
+    /* Make stacked headings/text match desktop column styles */
+    .about-stack .stack-item h5 {
+        text-align: center;
+        margin: 8px 0 12px 0;
+        font-size: 1.05rem; /* same as .about-col h5 */
+        color: var(--primary-green);
+        font-weight: 700;
+    }
+    .about-stack .stack-item p,
+    .about-stack .stack-item ul {
+        color: var(--gray-700);
+        line-height: 1.8;
+        font-size: 1rem;
+        margin: 0;
+    }
+    
+    .about-stack .stack-item p {
+        text-align: justify;
+    }
+    
+    .about-stack .stack-item ul {
+        text-align: center;
+    }
+
+    /* ensure icon spacing in stacked headings and hide bullets for values on mobile */
+    .about-stack .stack-item h5 i {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 12px;
+    }
+
+    .about-stack .stack-item ul {
+        list-style: none;
+        padding-left: 0;
+        margin-left: 0;
+        text-align: center;
+    }
+}
+
+.about-text h3 {
+    font-size: 2.2rem;
+    color: var(--primary-green);
+    margin-bottom: 20px;
+}
+
+.about-text > p {
+    font-size: 1.1rem;
+    color: var(--gray-700);
+    line-height: 1.8;
+    margin-bottom: 40px;
+}
+
+/* About Slideshow */
+.about-slideshow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+.slideshow-container {
+    position: relative;
+    width: 600px;
+    max-width: 95vw;
+    height: 340px;
+    overflow: visible;
+    display: flex;
+    align-items: center;
+}
+
+.slideshow-images {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.slideshow-slide {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 60%;
+    height: 100%;
+    opacity: 0;
+    transform: translateX(-50%) scale(0.85);
+    transition: opacity 0.7s, transform 0.7s;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.slideshow-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 14px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+.slideshow-slide.active {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+    z-index: 5;
+    pointer-events: auto;
+}
+
+.slideshow-slide.next,
+.slideshow-slide.next2 {
+    opacity: 0.7;
+    z-index: 4;
+}
+
+.slideshow-slide.prev,
+.slideshow-slide.prev2 {
+    opacity: 0.7;
+    z-index: 4;
+}
+
+.slideshow-slide.next {
+    transform: translateX(30%) scale(0.8);
+}
+
+.slideshow-slide.next2 {
+    transform: translateX(80%) scale(0.7);
+    opacity: 0.4;
+    z-index: 3;
+}
+
+.slideshow-slide.prev {
+    transform: translateX(-130%) scale(0.8);
+}
+
+.slideshow-slide.prev2 {
+    transform: translateX(-180%) scale(0.7);
+    opacity: 0.4;
+    z-index: 3;
+}
+
+@media (max-width: 900px) {
+    .slideshow-container {
+        width: 350px;
+        height: 180px;
+    }
+    .slideshow-slide {
+        width: 80%;
+    }
+}
+
+@media (max-width: 600px) {
+    .slideshow-container {
+        width: 95vw;
+        height: 120px;
+    }
+    .slideshow-slide {
+        width: 90%;
+    }
+}
+
+/* Features Grid */
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.feature-item {
+    display: flex;
+    gap: 20px;
+    padding: 25px;
+    background: var(--very-light-green);
+    border-radius: 15px;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.feature-item.animate {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.feature-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(45, 110, 63, 0.1);
+}
+
+.feature-icon {
+    width: 60px;
+    height: 60px;
+    background: var(--primary-green);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.feature-content h4 {
+    font-size: 1.2rem;
+    color: var(--dark-green);
+    margin-bottom: 8px;
+}
+
+.feature-content p {
+    color: var(--gray-700);
+    line-height: 1.5;
+}
+
+/* Stats Section */
+.about-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 40px;
+    text-align: center;
+    margin-top: 40px;
+}
+
+.stat-item {
+    padding: 30px 20px;
+    background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+    border-radius: 15px;
+    color: var(--white);
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.stat-item.animate {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.stat-item:hover {
+    transform: scale(1.05);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.stat-label {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+/* CTA Section */
+.cta-section {
+    background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+    padding: 80px 0;
+    text-align: center;
+    color: var(--white);
+}
+
+.cta-content h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+}
+
+.cta-content p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    opacity: 0.9;
+}
+
+.cta-section .btn-primary {
+    background: var(--white);
+    color: var(--primary-green);
+}
+
+.cta-section .btn-primary:hover {
+    background: var(--gray-100);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.footer {
+    background: var(--dark-green);
+    color: var(--white);
+    padding: 28px 0 12px; /* reduced vertical padding for a smaller footer */
+    font-size: 0.95rem;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 40px;
+    margin-bottom: 20px;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.footer-logo .logo-img {
+    width: 48px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: none;
+    background: transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    vertical-align: middle;
+}
+
+.footer-logo i {
+    font-size: 2rem;
+}
+
+.footer-section h4 {
+    margin-bottom: 16px;
+    color: var(--accent-green);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.footer-section {
+    text-align: left;
+    flex: 1;
+}
+
+.footer-section:first-child {
+    flex: 2;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-section li {
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.footer-section a {
+    color: rgba(255, 255, 255, 0.95);
+    text-decoration: none;
+    transition: color 0.18s ease;
+    display: inline-block;
+    font-size: 0.95rem;
+}
+
+.footer-section a:hover {
+    color: var(--accent-green);
+}
+.footer-section li a {
+    display: inline-block;
+    padding: 2px 0;
+}
+
+.footer-section li i {
+    width: 20px;
+    margin-right: 10px;
+    color: var(--accent-green);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.footer-section li,
+.footer-section li a {
+    color: var(--white);
+}
+
+.footer-bottom {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 10px;
+    display: flex;
+    justify-content: center; /* center copyright like design */
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .footer-section:first-child {
+        flex: 1;
+    }
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+}
+
+.social-links a {
+    width: 34px;
+    height: 34px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    transition: all 0.18s ease;
+    font-size: 0.95rem;
+}
+
+.social-links a:hover {
+    background: var(--accent-green);
+    transform: translateY(-2px);
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: auto;
+    background: rgba(0,0,0,0.4);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #fff;
+    margin: 10% auto;
+    padding: 30px 40px;
+    border-radius: 12px;
+    max-width: 700px;
+    box-shadow: 0 8px 32px rgba(45, 110, 63, 0.15);
+    position: relative;
+    animation: fadeInUp 0.4s;
+}
+
+.close-modal, .close-getstarted {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    font-size: 1.5rem;
+    color: var(--primary-green);
+    cursor: pointer;
+}
+
+.getstarted-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px 32px;
+}
+
+.getstarted-form label {
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: var(--dark-green);
+}
+
+.getstarted-form input,
+.getstarted-form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    font-size: 1rem;
+    background: var(--gray-100);
+    color: var(--gray-900);
+    transition: border 0.2s;
+    margin-bottom: 0;
+}
+
+.getstarted-form textarea {
+    grid-column: 1 / 3;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid var(--gray-300);
+    border-radius: 6px;
+    font-size: 1rem;
+    background: var(--gray-100);
+    color: var(--gray-900);
+    transition: border 0.2s;
+    margin-bottom: 0;
+}
+
+.getstarted-form button {
+    grid-column: 1 / 3;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Terms and Conditions Styling */
+.terms-section {
+    grid-column: 1 / 3;
+}
+
+.terms-checkbox-wrapper:hover {
+    border-color: var(--primary-green) !important;
+    background: #f1f8f1 !important;
+}
+
+.terms-checkbox-wrapper input[type="checkbox"]:focus {
+    outline: 2px solid var(--primary-green);
+    outline-offset: 2px;
+}
+
+.terms-text a:hover {
+    color: #1a5f1a !important;
+    text-decoration: underline !important;
+}
+
+.terms-checkbox-wrapper input[type="checkbox"]:checked + .terms-text {
+    color: #155724;
+}
+
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 18px;
+}
+
+.login-form label {
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: var(--dark-green);
+    font-size: 0.9rem;
+}
+
+.login-form input,
+.login-form select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 2px solid var(--gray-300);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: #fff;
+    color: var(--gray-900);
+    transition: all 0.3s ease;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.login-form input:focus,
+.login-form select:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(45, 110, 63, 0.1);
+    background-color: #fafbfc;
+}
+
+.login-form button {
+    width: 100%;
+    margin-top: 12px;
+    background: linear-gradient(135deg, var(--primary-green), var(--secondary-green));
+    color: white;
+    padding: 14px 0;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-form button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(45, 110, 63, 0.3);
+}
+
+.login-form button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    opacity: 0.7;
+}
+
+.login-form button.loading {
+    pointer-events: none;
+    color: transparent;
+}
+
+.login-form button.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+#loginModal .modal-content {
+    max-width: 400px;
+    padding: 30px 32px;
+}
+
+.login-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    display: none;
+    animation: fadeInDown 0.3s ease-out;
+    transition: all 0.3s ease;
+}
+
+        .login-error.show {
+            display: block !important;
+        }
+        
+        .login-error.lockout {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        
+        .login-error.lockout .lockout-timer {
+            font-weight: 700;
+            color: #dc3545;
+        }
+
+        /* Professional Login Success Modal Styles */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        #loginSuccessModal button:hover {
+            background: #343a40 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        #loginSuccessModal .modal-content {
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }@keyframes spin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Hide browser's native password toggle */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+    display: none;
+}
+
+.login-form input:focus,
+.login-form select:focus {
+    border-color: var(--primary-green) !important;
+    box-shadow: 0 0 0 0.2rem rgba(45, 110, 63, 0.25);
+    outline: none;
+}
+
+@media (max-width: 768px) {
+    .modal-content {
+        max-width: 95vw;
+        padding: 20px 10px;
+    }
+
+    .getstarted-form {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .getstarted-form textarea,
+    .getstarted-form button,
+    .terms-section {
+        grid-column: 1 / 2;
+    }
+
+    .getstarted-form label {
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .getstarted-form input,
+    .getstarted-form select,
+    .getstarted-form textarea {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 12px;
+    }
+
+    .terms-checkbox-wrapper {
+        padding: 12px !important;
+        gap: 10px !important;
+    }
+
+    .terms-text {
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+    }
+
+    .terms-checkbox-wrapper input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        margin-top: 1px !important;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hamburger {
+        display: flex;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 70px;
+        left: -100%;
+        width: 100%;
+        height: calc(100vh - 70px);
+        background: var(--white);
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 50px 0;
+        transition: left 0.3s ease;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-menu.active {
+        left: 0;
+    }
+
+    .nav-menu li {
+        margin: 20px 0;
+    }
+
+    .nav-menu .nav-link {
+        color: var(--dark-green);
+        font-weight: 600;
+    }
+
+    .nav-menu .nav-link.cta-button {
+        color: var(--white)!important;
+        background: var (--primary-green);
+        padding: 8px 18px;
+        border-radius: 22px;
+    }
+
+    .nav-menu .nav-link i{
+        color: var(--dark-green) !important;
+        font-size: 1.2rem;
+        vertical-align: middle;
+        margin-left: 6px;
+    }
+
+    .hamburger span {
+        background: var(--white);
+    }
+
+    .hamburger.active span {
+        background: var(--white);
+    }
+    .hero-content {
+        grid-template-columns: 1fr;
+        text-align: center;
+        gap: 40px;
+        padding: 100px 20px 0;
+    }
+
+    .hero-text {
+        max-width: 100%;
+        padding-left: 0;
+        padding: 0 20px;
+    }
+
+    .hero-text h1 {
+        font-size: 3.2rem;
+        line-height: 1.1;
+        margin-bottom: 20px;
+    }
+
+    .hero-buttons {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .dashboard-preview {
+        transform: none;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+
+    .features-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .about-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .footer-bottom {
+        text-align: center;
+    }
+
+    .about-header h2 {
+        font-size: 2.2rem;
+    }
+
+    .cta-content h2 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content {
+        padding: 120px 15px 0;
+    }
+    
+    .hero-text {
+        padding: 0 15px;
+    }
+    
+    .hero-text h1 {
+        font-size: 2.8rem;
+        line-height: 1.1;
+        margin-bottom: 15px;
+        letter-spacing: -0.3px;
+    }
+
+    .about-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-primary, .btn-secondary {
+        padding: 12px 24px;
+        font-size: 1rem;
+    }
+
+    /* Mobile form optimizations */
+    .getstarted-form {
+        gap: 12px;
+        padding: 20px 15px;
+    }
+
+    .getstarted-form input,
+    .getstarted-form select,
+    .getstarted-form textarea {
+        padding: 14px 12px;
+        font-size: 16px;
+        border-radius: 6px;
+    }
+
+    .terms-section {
+        margin: 16px 0 12px 0 !important;
+    }
+
+    .terms-checkbox-wrapper {
+        padding: 10px !important;
+        gap: 8px !important;
+        border-radius: 6px !important;
+        flex-direction: row !important;
+        align-items: flex-start !important;
+    }
+
+    .terms-text {
+        font-size: 12px !important;
+        line-height: 1.3 !important;
+    }
+
+    .terms-checkbox-wrapper input[type="checkbox"] {
+        width: 15px !important;
+        height: 15px !important;
+        margin-top: 0 !important;
+        flex-shrink: 0 !important;
+    }
+
+    .modal-content {
+        margin: 10px;
+        max-height: 85vh;
+        overflow-y: auto;
+    }
+
+    .modal-header {
+        padding: 15px !important;
+    }
+
+    .modal-body {
+        padding: 15px !important;
+        font-size: 13px !important;
+        line-height: 1.4 !important;
+    }
+}
+
+    .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .dashboard-preview {
+        max-width: 300px;
+    }
+
+    .preview-content {
+        padding: 20px;
+    }
+
+    .calendar-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .footer-content {
+        grid-template-columns: 1fr;
+        text-align: left;
+        gap: 24px;
+    }
+    
+    .footer-section {
+        text-align: left;
+    }
+    
+    .footer-logo {
+        justify-content: flex-start;
+        margin-bottom: 12px;
+    }
+
+    /* Mobile footer - remove bullets and left align all sections */
+    .footer-section ul {
+        list-style: none !important;
+        padding: 0 !important;
+    }
+    
+    .footer-section h4 {
+        text-align: left !important;
+        margin-bottom: 12px !important;
+    }
+    
+    .footer-section li {
+        text-align: left !important;
+        margin-bottom: 8px !important;
+    }
+
+
+/* Smooth Animations */
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-text {
+    animation: slideInFromLeft 1s ease-out;
+}
+
+.hero-image {
+    animation: slideInFromRight 1s ease-out 0.2s both;
+}
+
+.about-header {
+    animation: fadeInUp 1s ease-out;
+}
+
+/* Loading States */
+.btn-primary:active,
+.btn-secondary:active {
+    transform: translateY(-1px);
+}
+
+/* Focus States for Accessibility */
+.nav-link:focus,
+.btn-primary:focus,
+.btn-secondary:focus {
+    outline: 2px solid var(--accent-green);
+    outline-offset: 2px;
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-green: #1a5928;
+        --secondary-green: #2d6e3f;
+        --gray-700: #000000;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .navbar,
+    .hero-bg-shapes,
+    .cta-section,
+    .footer {
+        display: none;
+    }
+    
+    .hero,
+    .about {
+        padding: 20px 0;
+    }
+    
+    * {
+        color: black !important;
+        background: white !important;
+    }
+}
+
+/* Calendar Styles */
+.calendar-widget {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    max-width: 100%;
+    width: 100%;
+    margin: 8px 0;
+    font-size: 0.9rem;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.calendar-nav {
+    background: var(--primary-green);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 0.25rem 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.calendar-nav:hover {
+    background: var(--dark-green);
+}
+
+.calendar-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-green);
+    text-align: center;
+    flex: 1;
+}
+
+.calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    justify-content: space-around;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: #495057;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    border: 1px solid #dee2e6;
+}
+
+.legend-color.available {
+    background: #28a745;
+}
+
+.legend-color.weekend {
+    background: #6c757d;
+}
+
+.legend-color.holiday {
+    background: #e74c3c;
+}
+
+.legend-color.booked {
+    background: #dc3545;
+}
+
+.legend-color.past {
+    background: #e9ecef;
+}
+
+.calendar-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 8px;
+}
+
+.day-header {
+    text-align: center;
+    font-weight: 600;
+    color: var(--primary-green);
+    padding: 8px 4px;
+    font-size: 0.85rem;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin-bottom: 12px;
+}
+
+.calendar-day {
+    aspect-ratio: 1.2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px;
+    font-weight: 500;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    position: relative;
+    min-height: 40px;
+    padding: 4px;
+}
+
+.calendar-day.empty {
+    cursor: default;
+}
+
+.calendar-day.available {
+    background: #d4edda;
+    color: #155724;
+    border-color: #c3e6cb;
+}
+
+.calendar-day.available:hover {
+    background: #28a745;
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.calendar-day.weekend {
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.calendar-day.holiday {
+    background: #f5c2c7;
+    color: #842029;
+    border-color: #f1aeb5;
+    cursor: not-allowed;
+}
+
+.calendar-day.booked {
+    background: #f8d7da;
+    color: #721c24;
+    border-color: #f5c6cb;
+    cursor: not-allowed;
+}
+
+.calendar-day.past {
+    background: #e9ecef;
+    color: #adb5bd;
+    cursor: not-allowed;
+}
+
+.calendar-day.selected {
+    background: var(--primary-green) !important;
+    color: white !important;
+    border-color: var(--dark-green) !important;
+    box-shadow: 0 0 0 2px var(--accent-green);
+}
+
+.calendar-day.blocked {
+    background: #f8d7da !important;
+    color: #721c24 !important;
+    border-color: #f5c6cb !important;
+    cursor: not-allowed !important;
+    opacity: 0.9;
+}
+
+.calendar-day.blocked:hover {
+    background: #f5c6cb !important;
+    transform: none !important;
+}
+
+.calendar-day.booked::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 6px;
+    height: 6px;
+    background: #dc3545;
+    border-radius: 50%;
+}
+
+.calendar-day.has-inspections {
+    background: #f8d7da !important;
+    color: #721c24 !important;
+    border-color: #f5c6cb !important;
+    cursor: not-allowed !important;
+}
+
+.calendar-day.has-inspections:hover {
+    background: #f8d7da !important;
+    color: #721c24 !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.calendar-footer {
+    text-align: center;
+    padding-top: 10px;
+    border-top: 1px solid #e9ecef;
+}
+
+.selected-date-display {
+    font-size: 0.85rem;
+    color: var(--primary-green);
+    font-weight: 500;
+    padding: 6px 10px;
+    background: var(--very-light-green);
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.calendar-loading {
+    text-align: center;
+    padding: 40px;
+    color: #6c757d;
+}
+
+.calendar-loading i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+    display: block;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive calendar */
+@media (max-width: 768px) {
+    .calendar-widget {
+        margin: 8px 0;
+        padding: 12px;
+        max-width: 100%;
+    }
+    
+    .calendar-legend {
+        gap: 8px;
+        padding: 8px;
+        justify-content: center;
+    }
+    
+    .legend-item {
+        font-size: 0.75rem;
+    }
+    
+    .calendar-day {
+        font-size: 0.8rem;
+        min-height: 35px;
+        aspect-ratio: 1;
+    }
+    
+    .day-header {
+        font-size: 0.8rem;
+        padding: 6px 2px;
+    }
+    
+    .calendar-nav {
+        padding: 0.2rem 0.6rem;
+        font-size: 0.9rem;
+    }
+    
+    .calendar-title {
+        font-size: 0.9rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .calendar-widget {
+        max-width: 600px;
+        margin: 8px auto;
+    }
+    
+    .calendar-day {
+        min-height: 45px;
+    }
+}
+
+    </style>
+    <!-- Date Blocking Validation Script -->
+    <script src="js/date-blocking-validator.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <img src="images/logo.png" alt="AssessPro Logo" class="logo-img" />
+                <span>AssessPro</span>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#about" class="nav-link">About</a></li>
+                <li><a href="#" class="nav-link cta-button get-started-link">Begin Process</a></li>
+                <li><a href="#" class="nav-link login-link" title="Log in"><i class="fas fa-user-circle" style="font-size:1.4rem; color: rgba(255,255,255,0.95);"></i></a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>Office of the Municipal Assessor Mabini Batangas</h1>
+            </div>
+            <!-- hero-image removed as requested (visual preview card) -->
+        </div>
+        <div class="hero-bg-shapes">
+            <div class="shape shape1"></div>
+            <div class="shape shape2"></div>
+            <div class="shape shape3"></div>
+        </div>
+    </section>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 style="text-align:center; margin-bottom:24px;">Log In</h2>
+            <div id="loginError" class="login-error"></div>
+            <form class="login-form" style="display:flex; flex-direction:column; gap:18px;">
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <label for="username" style="font-weight:500;">Username</label>
+                    <input type="text" id="username" name="username" required style="padding:10px; border-radius:6px; border:1px solid #e9ecef;">
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <label for="password" style="font-weight:500;">Password</label>
+                    <div style="position:relative;">
+                        <input type="password" id="password" name="password" required style="padding:10px 40px 10px 10px; border-radius:6px; border:1px solid #e9ecef; width:100%; box-sizing:border-box;">
+                        <span id="togglePassword" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); cursor:pointer; color:#6c757d; font-size:16px; display:none; user-select:none;">
+                            <i class="fas fa-eye"></i>
+                        </span>
+                    </div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:6px;">
+                    <label for="role" style="font-weight:500;">Role</label>
+                    <select id="role" name="role" required style="padding:10px; border-radius:6px; border:1px solid #e9ecef;">
+                        <option value="">Select Role</option>
+                        <option value="admin">Admin</option>
+                        <option value="head">Head Assessor</option>
+                        <option value="staff">Staff</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="margin-top:10px; padding:12px 0; font-size:1.1rem;">Log In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Success Modal -->
+    <div id="loginSuccessModal" class="modal" style="display: none; z-index: 10002; backdrop-filter: blur(4px);">
+        <div class="modal-content" style="max-width: 380px; text-align: center; border-radius: 8px; box-shadow: 0 20px 60px rgba(0,0,0,0.12); border: 1px solid #e9ecef; background: white;">
+            
+            <!-- Header Section -->
+            <div style="padding: 2.5rem 2rem 1.5rem 2rem; border-bottom: 1px solid #f1f3f4;">
+                <div style="width: 64px; height: 64px; background: #f8f9fa; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; border: 2px solid #e9ecef;">
+                    <i class="fas fa-check" style="color: #28a745; font-size: 1.5rem; font-weight: 600;"></i>
+                </div>
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600; color: #212529; letter-spacing: -0.025em;">Login Successful</h2>
+                <p style="margin: 0.5rem 0 0 0; color: #6c757d; font-size: 0.9rem; font-weight: 400;">Access granted to your dashboard</p>
+            </div>
+            
+            <!-- Content Section -->
+            <div style="padding: 2rem;">
+                <div style="background: #fafbfc; border: 1px solid #e9ecef; border-radius: 6px; padding: 1.5rem;">
+                    <div style="display: grid; gap: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; min-height: 24px;">
+                            <span style="font-size: 0.85rem; font-weight: 500; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;">Username</span>
+                            <span id="loginSuccessUsername" style="font-size: 0.9rem; font-weight: 500; color: #212529; text-align: right; line-height: 1.2;"></span>
+                        </div>
+                        <div style="height: 1px; background: #e9ecef; margin: 0;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; min-height: 24px;">
+                            <span style="font-size: 0.85rem; font-weight: 500; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;">Role</span>
+                            <span id="loginSuccessRole" style="font-size: 0.8rem; font-weight: 600; background: #e8f5e8; color: #2d5a2d; padding: 0.35rem 0.8rem; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.3px; line-height: 1; white-space: nowrap;"></span>
+                        </div>
+                        <div style="height: 1px; background: #e9ecef; margin: 0;"></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; min-height: 24px;">
+                            <span style="font-size: 0.85rem; font-weight: 500; color: #495057; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.2;">Dashboard</span>
+                            <span id="loginSuccessRedirect" style="font-size: 0.9rem; font-weight: 500; color: #212529; text-align: right; line-height: 1.2;"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Get Started Modal -->
+    <div id="getStartedModal" class="modal">
+        <div class="modal-content">
+            <span class="close-getstarted">&times;</span>
+            <h2>Inspection Request Form</h2>
+            <form class="getstarted-form">
+                <label for="clientName">Name</label>
+                <input type="text" id="clientName" name="clientName" required>
+
+                <label for="clientEmail">Email</label>
+                <input type="email" id="clientEmail" name="clientEmail" required>
+
+                <label for="inspectionCategory">Inspection Category</label>
+                <select id="inspectionCategory" name="inspectionCategory" required>
+                    <option value="">Select Category</option>
+                    <option value="Machinery">Machinery</option>
+                    <option value="Building">Building</option>
+                    <option value="Property">Property</option>
+                </select>
+
+                <label for="propertyClass" id="propertyClassLabel" style="display: none;">Classification of Property</label>
+                <select id="propertyClass" name="propertyClass" style="display: none;">
+                    <option value="">Select Classification</option>
+                    <option value="Residential">Residential</option>
+                    <option value="Commercial">Commercial</option>
+                    <option value="Agricultural">Agricultural</option>
+                    <option value="Industrial">Industrial</option>
+                </select>
+
+                <label for="requestedDate" id="requestedDateLabel" style="display: none;">Preferred Inspection Date</label>
+                <div id="calendarContainer" style="display: none;">
+                    <div class="calendar-widget">
+                        <div class="calendar-header">
+                            <button type="button" class="calendar-nav" id="prevMonth">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div class="calendar-title" id="calendarTitle">
+                                Loading...
+                            </div>
+                            <button type="button" class="calendar-nav" id="nextMonth">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                        <div class="calendar-days-header">
+                            <div class="day-header">Sun</div>
+                            <div class="day-header">Mon</div>
+                            <div class="day-header">Tue</div>
+                            <div class="day-header">Wed</div>
+                            <div class="day-header">Thu</div>
+                            <div class="day-header">Fri</div>
+                            <div class="day-header">Sat</div>
+                        </div>
+                        <div class="calendar-grid" id="calendarGrid">
+                            <!-- Calendar days will be populated here -->
+                        </div>
+                        <div class="calendar-footer">
+                            <div id="selectedDateDisplay" class="selected-date-display">
+                                No date selected
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <input type="hidden" id="requestedDate" name="requestedDate">
+
+                <label for="location">Location</label>
+                <select id="location" name="location" required>
+                    <option value="">Select Location</option>
+                    <option value="Barangay Poblacion">Barangay Poblacion</option>
+                    <option value="Barangay Anilao Proper">Barangay Anilao Proper</option>
+                    <option value="Barangay Anilao East">Barangay Anilao East</option>
+                    <option value="Barangay Bagalangit">Barangay Bagalangit</option>
+                    <option value="Barangay Bulacan">Barangay Bulacan</option>
+                    <option value="Barangay Calamias">Barangay Calamias</option>
+                    <option value="Barangay Estrella">Barangay Estrella</option>
+                    <option value="Barangay Gasang">Barangay Gasang</option>
+                    <option value="Barangay Laurel">Barangay Laurel</option>
+                    <option value="Barangay Ligaya">Barangay Ligaya</option>
+                    <option value="Barangay Mainaga">Barangay Mainaga</option>
+                    <option value="Barangay Mainit">Barangay Mainit</option>
+                    <option value="Barangay Majuben">Barangay Majuben</option>
+                    <option value="Barangay Malimatoc-1">Barangay Malimatoc-1</option>
+                    <option value="Barangay Malimatoc-2">Barangay Malimatoc-2</option>
+                    <option value="Barangay Nag-Iba">Barangay Nag-Iba</option>
+                    <option value="Barangay Pilahan">Barangay Pilahan</option>
+                    <option value="Barangay P. Anahao">Barangay P. Anahao</option>
+                    <option value="Barangay P. Balibaguhan">Barangay P. Balibaguhan</option>
+                    <option value="Barangay P. Lupa">Barangay P. Lupa</option>
+                    <option value="Barangay P. Niogan">Barangay P. Niogan</option>
+                    <option value="Barangay Saguing">Barangay Saguing</option>
+                    <option value="Barangay Sampaguita">Barangay Sampaguita</option>
+                    <option value="Barangay San Francisco">Barangay San Francisco</option>
+                    <option value="Barangay San Jose">Barangay San Jose</option>
+                    <option value="Barangay San Juan">Barangay San Juan</option>
+                    <option value="Barangay San Teodoro">Barangay San Teodoro</option>
+                    <option value="Barangay Solo">Barangay Solo</option>
+                    <option value="Barangay Sta. Ana">Barangay Sta. Ana</option>
+                    <option value="Barangay Sta. Mesa">Barangay Sta. Mesa</option>
+                    <option value="Barangay Sto. Niño">Barangay Sto. Niño</option>
+                    <option value="Barangay Sto. Tomas">Barangay Sto. Tomas</option>
+                    <option value="Barangay Talaga Proper">Barangay Talaga Proper</option>
+                    <option value="Barangay Talaga East">Barangay Talaga East</option>
+                </select>
+
+                <label for="landmark">Landmark</label>
+                <input type="text" id="landmark" name="landmark" required>
+
+                <label for="landRef">Land Reference/ARP</label>
+                <input type="text" id="landRef" name="landRef" required>
+
+                <label for="contactPerson">Contact Person</label>
+                <input type="text" id="contactPerson" name="contactPerson" required placeholder="Full name of contact person">
+
+                <label for="contactNumber">Contact Number</label>
+                <input type="tel" id="contactNumber" name="contactNumber" required placeholder="e.g., 09123456789">
+
+                <label for="purpose">Purpose</label>
+                <textarea id="purpose" name="purpose" rows="4" required placeholder="Describe your purpose..."></textarea>
+
+                <label for="validId">Attach Valid ID</label>
+                <input type="file" id="validId" name="validId" accept="image/*,.pdf" required>
+
+                <!-- Terms and Conditions -->
+                <div class="terms-section" style="margin: 24px 0 16px 0;">
+                    <div class="terms-checkbox-wrapper" style="display: flex; align-items: flex-start; gap: 12px; padding: 16px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; transition: border-color 0.3s ease;">
+                        <input type="checkbox" id="termsAccepted" name="termsAccepted" required 
+                               style="margin-top: 3px; width: 18px; height: 18px; accent-color: var(--primary-green); cursor: pointer; flex-shrink: 0;">
+                        <div class="terms-text" style="flex: 1; font-size: 14px; line-height: 1.5; color: #495057;">
+                            <span>I have read and agree to the </span>
+                            <a href="#" id="viewTermsLink" 
+                               style="color: var(--primary-green); text-decoration: none; font-weight: 600; transition: color 0.3s ease;">
+                               Terms and Conditions
+                            </a>
+                            <span> and </span>
+                            <a href="#" id="viewPrivacyLink" 
+                               style="color: var(--primary-green); text-decoration: none; font-weight: 600; transition: color 0.3s ease;">
+                               Privacy Policy
+                            </a>
+                            <span>. I confirm that all information provided is accurate and understand that false information may result in request rejection.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">Submit Request</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Professional Request Submission Success Modal -->
+    <div id="requestSuccessModal" class="modal" style="display: none; z-index: 10003; backdrop-filter: blur(4px);">
+        <div class="modal-content" style="max-width: 460px; text-align: center; border-radius: 12px; box-shadow: 0 24px 80px rgba(0,0,0,0.15); border: 1px solid #e9ecef; background: white; overflow: hidden;">
+            
+            <!-- Success Icon Header -->
+            <div style="padding: 2rem 2rem 1.5rem 2rem; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+                <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #28a745 0%, #20c997 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);">
+                    <i class="fas fa-check" style="color: white; font-size: 1.5rem; font-weight: 600;"></i>
+                </div>
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 700; color: #212529; letter-spacing: -0.025em;">Request Submitted!</h2>
+                <p style="margin: 0.5rem 0 0 0; color: #6c757d; font-size: 0.9rem; font-weight: 400; line-height: 1.4;">Your inspection request has been received</p>
+            </div>
+            
+            <!-- Compact Information Content -->
+            <div style="padding: 1.5rem 2rem 2rem 2rem;">
+                <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1.25rem; margin-bottom: 1.25rem;">
+                    <h4 style="margin: 0 0 0.75rem 0; font-size: 1rem; font-weight: 600; color: #495057;">What's Next?</h4>
+                    <div style="text-align: left; font-size: 0.85rem; color: #6c757d; line-height: 1.5;">
+                        <p style="margin: 0 0 0.5rem 0;">📋 <strong>Review:</strong> We'll validate your request details</p>
+                        <p style="margin: 0 0 0.5rem 0;">📞 <strong>Contact:</strong> You'll hear from us in 1-2 business days</p>
+                        <p style="margin: 0;">🏠 <strong>Inspection:</strong> We'll schedule your property visit</p>
+                    </div>
+                </div>
+                
+                <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 6px; padding: 0.75rem; margin-bottom: 1.25rem;">
+                    <p style="margin: 0; font-size: 0.8rem; color: #155724; text-align: center;">
+                        <i class="fas fa-info-circle" style="margin-right: 0.4rem;"></i>
+                        <strong>Keep your contact info accessible</strong> - we may need additional details
+                    </p>
+                </div>
+                
+                <button onclick="closeSuccessModal()" style="background: #28a745; color: white; border: none; padding: 0.75rem 2rem; border-radius: 6px; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s ease; width: 100%;">
+                    Continue
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Request Error Modal -->
+    <div id="requestErrorModal" class="modal" style="display: none; z-index: 10003; backdrop-filter: blur(4px);">
+        <div class="modal-content" style="max-width: 480px; text-align: center; border-radius: 12px; box-shadow: 0 24px 80px rgba(0,0,0,0.15); border: 1px solid #e9ecef; background: white; overflow: hidden;">
+            
+            <!-- Error Icon Header -->
+            <div style="padding: 2rem 2rem 1.5rem 2rem; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+                <div id="errorIcon" style="width: 64px; height: 64px; background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);">
+                    <i class="fas fa-exclamation-triangle" style="color: white; font-size: 1.5rem; font-weight: 600;"></i>
+                </div>
+                <h2 id="errorTitle" style="margin: 0; font-size: 1.4rem; font-weight: 700; color: #212529; letter-spacing: -0.025em;">Request Notice</h2>
+                <p id="errorSubtitle" style="margin: 0.5rem 0 0 0; color: #6c757d; font-size: 0.9rem; font-weight: 400; line-height: 1.4;">Please review the information below</p>
+            </div>
+            
+            <!-- Error Message Content -->
+            <div style="padding: 1.5rem 2rem 2rem 2rem;">
+                <div id="errorMessageContainer" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.25rem; text-align: left;">
+                    <div id="errorMessage" style="font-size: 0.9rem; color: #495057; line-height: 1.6; white-space: pre-line;">
+                        <!-- Error message will be inserted here -->
+                    </div>
+                </div>
+                
+                <div id="retryInfo" style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 6px; padding: 0.75rem; margin-bottom: 1.25rem; display: none;">
+                    <p id="retryText" style="margin: 0; font-size: 0.8rem; color: #856404; text-align: center;">
+                        <i class="fas fa-clock" style="margin-right: 0.4rem;"></i>
+                        <span id="retryTime"></span>
+                    </p>
+                </div>
+                
+                <button onclick="closeErrorModal()" style="background: #6c757d; color: white; border: none; padding: 0.75rem 2rem; border-radius: 6px; font-size: 0.95rem; font-weight: 500; cursor: pointer; transition: background-color 0.2s ease; width: 100%;">
+                    Understood
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms and Conditions Modal -->
+    <div id="termsModal" class="modal" style="display: none; z-index: 10004;">
+        <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #e9ecef; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+                <h2 style="margin: 0; color: var(--primary-green); font-size: 1.5rem;">Terms and Conditions</h2>
+                <span class="close-modal" onclick="closeTermsModal()" style="font-size: 1.5rem; cursor: pointer; color: #6c757d;">&times;</span>
+            </div>
+            <div style="padding: 2rem;">
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">1. Service Agreement</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">By submitting an assessment request, you agree to engage the Office of the Municipal Assessor of Mabini, Batangas for property assessment services.</p>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">2. Information Accuracy</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">You certify that all information provided in your request is true, accurate, and complete. Providing false or misleading information may result in the rejection of your application and potential legal consequences.</p>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">3. Property Access</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">You agree to provide reasonable access to the property for inspection purposes during business hours and at mutually agreed times.</p>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">4. Processing Time</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">Assessment requests are processed within 5-10 business days. Complex cases may require additional time, and you will be notified of any delays.</p>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">5. No Cancellation Policy</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">Please note that once an assessment request is submitted and accepted, it cannot be cancelled or withdrawn. All submitted requests will be processed according to the established procedures and timelines.</p>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">6. Privacy and Data Protection</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">Your personal information will be handled in accordance with applicable privacy laws and used solely for the purpose of property assessment and related municipal services.</p>
+                </div>
+
+                <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 6px; padding: 1rem; margin-top: 1.5rem;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #155724; text-align: center;">
+                        <strong>By checking the agreement box, you acknowledge that you have read, understood, and agree to these terms and conditions.</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Policy Modal -->
+    <div id="privacyModal" class="modal" style="display: none; z-index: 10004;">
+        <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+            <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; border-bottom: 1px solid #e9ecef; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
+                <h2 style="margin: 0; color: var(--primary-green); font-size: 1.5rem;">Data Privacy Policy</h2>
+                <span class="close-modal" onclick="closePrivacyModal()" style="font-size: 1.5rem; cursor: pointer; color: #6c757d;">&times;</span>
+            </div>
+            <div style="padding: 2rem;">
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">1. Data Protection Compliance</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">The Office of the Municipal Assessor of Mabini, Batangas is committed to protecting your personal data in accordance with Republic Act No. 10173, known as the Data Privacy Act of 2012, and its implementing rules and regulations.</p>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">2. Data Collection Purpose</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">We collect personal information solely for the following purposes:</p>
+                    <ul style="margin-left: 1.5rem; line-height: 1.6;">
+                        <li>Property assessment and valuation services</li>
+                        <li>Scheduling and coordination of property inspections</li>
+                        <li>Communication regarding assessment requests and results</li>
+                        <li>Compliance with tax assessment and municipal records requirements</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">3. Types of Data Collected</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">We may collect the following types of personal information:</p>
+                    <ul style="margin-left: 1.5rem; line-height: 1.6;">
+                        <li>Full name and contact information (email, phone number)</li>
+                        <li>Property address and ownership details</li>
+                        <li>Property characteristics and specifications</li>
+                        <li>Assessment request details and preferred schedules</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">4. Data Storage and Security</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">Your personal data is stored securely with appropriate technical and organizational measures to prevent unauthorized access, disclosure, alteration, or destruction. We implement industry-standard security practices and regularly update our systems.</p>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">5. Data Sharing and Disclosure</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">Your personal information is not shared with third parties except when:</p>
+                    <ul style="margin-left: 1.5rem; line-height: 1.6;">
+                        <li>Required by law or court order</li>
+                        <li>Necessary for official municipal assessment processes</li>
+                        <li>With your explicit written consent</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">6. Your Data Rights</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">Under the Data Privacy Act, you have the following rights:</p>
+                    <ul style="margin-left: 1.5rem; line-height: 1.6;">
+                        <li>Right to be informed about data processing activities</li>
+                        <li>Right to access your personal data</li>
+                        <li>Right to object to automated decision-making</li>
+                        <li>Right to request correction of inaccurate data</li>
+                        <li>Right to erasure or blocking of data (subject to legal retention requirements)</li>
+                        <li>Right to file complaints with the National Privacy Commission</li>
+                    </ul>
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <h3 style="color: var(--primary-green); margin-bottom: 0.5rem;">7. Data Retention</h3>
+                    <p style="margin-bottom: 1rem; line-height: 1.6;">Personal data is retained only for as long as necessary to fulfill the purposes for which it was collected, or as required by applicable laws and regulations governing municipal records.</p>
+                </div>
+
+                <div style="background: #e8f5e8; border: 1px solid #c3e6cb; border-radius: 6px; padding: 1rem; margin-top: 1.5rem;">
+                    <p style="margin: 0; font-size: 0.9rem; color: #155724; text-align: center;">
+                        <strong>This privacy policy complies with Republic Act No. 10173 (Data Privacy Act of 2012) and ensures the protection of your personal information.</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-header">
+                <h2>About the Assessor's Office</h2>
+                <p>Excellence in Property Assessment and Public Service</p>
+            </div>
+
+            <!-- Three image cards -->
+            <div class="about-cards">
+                <div class="about-card">
+                    <img src="images/inspect 1.1.jpg" alt="mission image" />
+                </div>
+                <div class="about-card">
+                    <img src="images/inspect 1.2.jpg" alt="vision image" />
+                   
+                </div>
+                <div class="about-card">
+                    <img src="images/inspect 1.3.jpg" alt="values image" />
+                </div>
+            </div>
+
+            <!-- Three column content: Mission / Vision / Values -->
+            <div class="about-columns">
+                <div class="about-col">
+                    <h5><i class="fas fa-bullseye" aria-hidden="true"></i>Mission</h5>
+                    <p>To deliver efficient, transparent, and accessible property assessment services by providing a reliable scheduling system for assessors and the public, ensuring timely appointments and accurate property records for the benefit of the community.</p>
+                </div>
+
+                <div class="about-col">
+                    <h5><i class="fas fa-eye" aria-hidden="true"></i>Vision</h5>
+                    <p>To be the leading municipal assessor's office recognized for innovation in property assessment and public service, utilizing advanced scheduling technology to promote fairness, accuracy, and convenience for all stakeholders.</p>
+                </div>
+
+                <div class="about-col">
+                    <h5><i class="fas fa-gem" aria-hidden="true"></i>Values</h5>
+                    <ul>
+                        <li>Sustainability</li>
+                        <li>Cultural Respect</li>
+                        <li>Customer-Centricity</li>
+                        <li>Integrity</li>
+                        <li>Excellence</li>
+                    </ul>
+                </div>
+            </div>
+            <!-- Mobile stacked version: image then content repeated -->
+            <div class="about-stack">
+                <div class="stack-item">
+                    <img src="images/inspect 1.1.jpg" alt="Mission image" />
+                    <h5><i class="fas fa-bullseye" aria-hidden="true"></i>Mission</h5>
+                    <p>To deliver efficient, transparent, and accessible property assessment services by providing a reliable scheduling system for assessors and the public, ensuring timely appointments and accurate property records for the benefit of the community.</p>
+                </div>
+
+                <div class="stack-item">
+                    <img src="images/inspect 1.2.jpg" alt="Vision image" />
+                    <h5><i class="fas fa-eye" aria-hidden="true"></i>Vision</h5>
+                    <p>To be the leading municipal assessor's office recognized for innovation in property assessment and public service, utilizing advanced scheduling technology to promote fairness, accuracy, and convenience for all stakeholders.</p>
+                </div>
+
+                <div class="stack-item">
+                    <img src="images/inspect 1.3.jpg" alt="Values image" />
+                    <h5><i class="fas fa-gem" aria-hidden="true"></i>Values</h5>
+                    <ul>
+                        <li>Sustainability</li>
+                        <li>Cultural Respect</li>
+                        <li>Customer-Centricity</li>
+                        <li>Integrity</li>
+                        <li>Excellence</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Welcome Information Modal -->
+    <div id="welcomeModal" class="modal" style="display: none; z-index: 10000; backdrop-filter: blur(6px); align-items: flex-start; justify-content: center; padding-top: 5vh;">
+        <div class="modal-content welcome-modal-content" style="max-width: 900px; width: 95vw; border-radius: 16px; box-shadow: 0 25px 80px rgba(0,0,0,0.15); border: 1px solid #e9ecef; background: white; overflow: hidden; max-height: 85vh; display: flex; flex-direction: column;">
+            
+            <!-- Header Section with Close Button -->
+            <div style="position: relative; padding: 1.25rem 1.75rem 1rem 1.75rem; background: linear-gradient(135deg, var(--dark-green) 0%, var(--primary-green) 50%, var(--secondary-green) 100%); color: white; text-align: center; border-bottom: 2px solid rgba(255,255,255,0.1);">
+                <div id="closeModalBtn" style="position: absolute; top: 12px; right: 16px; font-size: 22px; cursor: pointer; color: white; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: rgba(255,255,255,0.1); z-index: 99999; border: 1px solid rgba(255,255,255,0.2); transition: all 0.2s ease; font-weight: 300;" onmouseover="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='scale(1.05)'" onmouseout="this.style.background='rgba(255,255,255,0.1)'; this.style.transform='scale(1)'">&times;</div>
+                
+                <div style="width: 56px; height: 56px; background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05)); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <i class="fas fa-building" style="color: white; font-size: 1.6rem;"></i>
+                </div>
+                
+                <h2 style="margin: 0 0 0.25rem 0; font-size: 1.6rem; font-weight: 700; text-shadow: 0 2px 8px rgba(0,0,0,0.2); letter-spacing: -0.2px;">Welcome to AssessPro</h2>
+                <p style="margin: 0 0 0.25rem 0; font-size: 0.9rem; opacity: 0.9; font-weight: 400; letter-spacing: 0.1px;">Professional Property Assessment Platform</p>
+                <div style="width: 40px; height: 2px; background: rgba(255,255,255,0.4); margin: 0.75rem auto 0; border-radius: 1px;"></div>
+            </div>
+
+            <!-- Content Section -->
+            <div style="padding: 1.5rem 2rem; flex: 1; overflow-y: auto; min-height: 0;">
+                <!-- What is AssessPro Section -->
+                <div style="margin-bottom: 2rem; text-align: center;">
+                    <div style="display: inline-flex; align-items: center; justify-content: center; width: 60px; height: 60px; background: linear-gradient(135deg, var(--primary-green), var(--secondary-green)); border-radius: 14px; margin-bottom: 1.5rem; box-shadow: 0 4px 15px rgba(45, 110, 63, 0.3);">
+                        <i class="fas fa-info-circle" style="color: white; font-size: 1.5rem;"></i>
+                    </div>
+                    <h3 style="margin: 0 0 1rem 0; font-size: 1.5rem; color: var(--primary-green); font-weight: 700; letter-spacing: -0.2px; line-height: 1.3;">About AssessPro</h3>
+                    <p style="margin: 0 0 1.5rem 0; font-size: 1rem; line-height: 1.6; color: #4a5568; max-width: 600px; margin-left: auto; margin-right: auto; font-weight: 400;">
+                        AssessPro is your gateway to professional property assessment services. 
+                        Submit your assessment request through our platform, and our qualified staff will review and schedule your appointment with certified assessors.
+                    </p>
+                </div>
+
+                <!-- Features Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+                    <div style="background: linear-gradient(135deg, #ffffff, #f8fafc); padding: 1.5rem 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 15px rgba(0,0,0,0.06)'">
+                        <div style="position: absolute; top: -8px; right: -8px; width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary-green), var(--secondary-green)); border-radius: 50%; opacity: 0.08;"></div>
+                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, var(--primary-green), var(--secondary-green)); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; box-shadow: 0 4px 12px rgba(45, 110, 63, 0.25);">
+                                <i class="fas fa-calendar-check" style="color: white; font-size: 1.1rem;"></i>
+                            </div>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: var(--primary-green); font-weight: 700; letter-spacing: -0.1px;">Easy Request Submission</h4>
+                        </div>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.5; color: #4a5568; font-weight: 400;">
+                            Submit your property assessment request online with our simple form. Our staff will review and contact you to schedule your appointment.
+                        </p>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #ffffff, #f8fafc); padding: 1.5rem 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 15px rgba(0,0,0,0.06)'">
+                        <div style="position: absolute; top: -8px; right: -8px; width: 32px; height: 32px; background: linear-gradient(135deg, var(--secondary-green), var(--light-green)); border-radius: 50%; opacity: 0.08;"></div>
+                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, var(--secondary-green), var(--light-green)); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; box-shadow: 0 4px 12px rgba(74, 153, 96, 0.25);">
+                                <i class="fas fa-user-tie" style="color: white; font-size: 1.1rem;"></i>
+                            </div>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: var(--primary-green); font-weight: 700; letter-spacing: -0.1px;">Staff Review & Scheduling</h4>
+                        </div>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.5; color: #4a5568; font-weight: 400;">
+                            Our trained staff review each request and coordinate with certified assessors to schedule your assessment at a convenient time.
+                        </p>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #ffffff, #f8fafc); padding: 1.5rem 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 15px rgba(0,0,0,0.06)'">
+                        <div style="position: absolute; top: -8px; right: -8px; width: 32px; height: 32px; background: linear-gradient(135deg, var(--light-green), var(--accent-green)); border-radius: 50%; opacity: 0.08;"></div>
+                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, var(--light-green), var(--accent-green)); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; box-shadow: 0 4px 12px rgba(124, 184, 132, 0.25);">
+                                <i class="fas fa-certificate" style="color: white; font-size: 1.1rem;"></i>
+                            </div>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: var(--primary-green); font-weight: 700; letter-spacing: -0.1px;">Professional Assessment</h4>
+                        </div>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.5; color: #4a5568; font-weight: 400;">
+                            Certified assessors conduct thorough property evaluations following municipal standards and provide detailed assessment reports.
+                        </p>
+                    </div>
+
+                    <div style="background: linear-gradient(135deg, #ffffff, #f8fafc); padding: 1.5rem 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 15px rgba(0,0,0,0.06); transition: all 0.3s ease; position: relative; overflow: hidden;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 15px rgba(0,0,0,0.06)'">
+                        <div style="position: absolute; top: -8px; right: -8px; width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-green), var(--secondary-green)); border-radius: 50%; opacity: 0.08;"></div>
+                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <div style="width: 44px; height: 44px; background: linear-gradient(135deg, var(--accent-green), var(--secondary-green)); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; box-shadow: 0 4px 12px rgba(149, 213, 163, 0.25);">
+                                <i class="fas fa-bell" style="color: white; font-size: 1.1rem;"></i>
+                            </div>
+                            <h4 style="margin: 0; font-size: 1.1rem; color: var(--primary-green); font-weight: 700; letter-spacing: -0.1px;">Status Updates</h4>
+                        </div>
+                        <p style="margin: 0; font-size: 0.9rem; line-height: 1.5; color: #4a5568; font-weight: 400;">
+                            Stay informed with real-time updates on your request status, scheduled appointments, and assessment completion notifications.
+                        </p>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <img src="images/logo.png" alt="AssessPro Logo" class="logo-img" />
+                        <span>AssessPro</span>
+                    </div>
+                    <p>Professional scheduling solutions for assessment experts.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#about">About</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Developers</h4>
+                    <ul>
+                        <li>Jester M. Calangi</li>
+                        <li>Mariene M. Dalisay</li>
+                        <li>Ryan C. Dalisay</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> <a href="mailto:hello@assesspro.com">hello@assesspro.com</a></li>
+                        <li><i class="fas fa-phone"></i> <a href="tel:+15551234567">+1 (555) 123-4567</a></li>
+                        <li><i class="fas fa-map-marker-alt"></i> 123 Business Ave</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 AssessPro. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    
+
+    <script>
+        // Smooth scrolling for navigation links
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const href = this.getAttribute('href');
+        // Check if href has a valid target (not just "#")
+        if (href && href !== '#' && href.length > 1) {
+            const target = document.querySelector(href);
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+        }
+    });
+});
+
+// Mobile menu toggle
+const hamburger = document.querySelector('.hamburger');
+const navMenu = document.querySelector('.nav-menu');
+
+hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('active');
+    navMenu.classList.toggle('active');
+});
+
+// Close mobile menu when clicking on a link
+document.querySelectorAll('.nav-link').forEach(n => n.addEventListener('click', () => {
+    hamburger.classList.remove('active');
+    navMenu.classList.remove('active');
+}));
+
+// Navbar background on scroll
+window.addEventListener('scroll', () => {
+    const navbar = document.querySelector('.navbar');
+    if (window.scrollY > 50) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
+});
+
+// Add animation on scroll
+const observerOptions = {
+    threshold: 0.1,
+    rootMargin: '0px 0px -50px 0px'
+};
+
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('animate');
+        }
+    });
+}, observerOptions);
+
+document.querySelectorAll('.feature-item, .stat-item').forEach(el => {
+    observer.observe(el);
+});
+
+// Login modal functionality
+const loginLink = document.querySelector('.login-link');
+const loginModal = document.getElementById('loginModal');
+const closeModal = document.querySelector('.close-modal');
+const loginForm = document.querySelector('.login-form');
+
+// Login error functions with professional lockout handling
+function showLoginError(message, isLockout = false) {
+    console.log('Showing login error:', message, 'Lockout:', isLockout);
+    const errorDiv = document.getElementById('loginError');
+    if (errorDiv) {
+        errorDiv.innerHTML = message;
+        errorDiv.className = 'login-error show' + (isLockout ? ' lockout' : '');
+        console.log('Error div displayed:', errorDiv.innerHTML);
+        
+        // Auto-hide regular errors after 10 seconds (but not lockout errors)
+        if (!isLockout) {
+            setTimeout(() => {
+                errorDiv.className = 'login-error';
+            }, 10000);
+        }
+    } else {
+        console.error('Error div not found!');
+    }
+}
+
+function hideLoginError() {
+    const errorDiv = document.getElementById('loginError');
+    if (errorDiv) {
+        errorDiv.style.display = 'none';
+        errorDiv.classList.remove('show');
+    }
+}
+
+// Global lockout timer variable
+let lockoutTimer = null;
+
+// Start lockout countdown timer
+function startLockoutTimer(seconds) {
+    const errorDiv = document.getElementById('loginError');
+    const submitBtn = document.querySelector('.login-form button[type="submit"]');
+    
+    // Disable login button during lockout
+    if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.style.opacity = '0.6';
+        submitBtn.style.cursor = 'not-allowed';
+    }
+    
+    // Clear any existing timer
+    if (lockoutTimer) {
+        clearInterval(lockoutTimer);
+    }
+    
+    let remaining = seconds;
+    
+    // Update timer display immediately
+    updateLockoutDisplay(remaining);
+    
+    // Start countdown
+    lockoutTimer = setInterval(() => {
+        remaining--;
+        
+        if (remaining <= 0) {
+            // Lockout expired
+            clearInterval(lockoutTimer);
+            lockoutTimer = null;
+            
+            // Re-enable login button
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+                submitBtn.style.cursor = 'pointer';
+            }
+            
+            // Clear error message
+            if (errorDiv) {
+                errorDiv.className = 'login-error';
+            }
+        } else {
+            updateLockoutDisplay(remaining);
+        }
+    }, 1000);
+}
+
+// Update lockout timer display
+function updateLockoutDisplay(seconds) {
+    const errorDiv = document.getElementById('loginError');
+    if (errorDiv) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        const timeDisplay = `${minutes}:${secs.toString().padStart(2, '0')}`;
+        
+        errorDiv.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-lock" style="color: #dc3545; font-size: 1.1em;"></i>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Account Temporarily Locked</div>
+                    <div style="font-size: 0.85em;">Too many failed attempts. Please wait <span class="lockout-timer">${timeDisplay}</span> before trying again.</div>
+                </div>
+            </div>
+        `;
+        errorDiv.className = 'login-error show lockout';
+    }
+}
+
+loginLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    hideLoginError(); // Clear any existing errors
+    loginModal.style.display = 'block';
+});
+
+closeModal.addEventListener('click', () => {
+    loginModal.style.display = 'none';
+});
+
+window.addEventListener('click', (e) => {
+    if (e.target === loginModal) {
+        loginModal.style.display = 'none';
+    }
+});
+
+// Hide error when user starts typing
+loginForm.addEventListener('input', hideLoginError);
+
+loginForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Hide any existing errors
+    hideLoginError();
+    
+    const username = loginForm.username.value.trim();
+    const password = loginForm.password.value.trim();
+    const role = loginForm.role.value;
+    
+    // Basic validation
+    if (!username || !password || !role) {
+        showLoginError('Please fill in all fields.');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = '';
+    submitBtn.classList.add('loading');
+    submitBtn.disabled = true;
+    
+    try {
+        // Send login request to backend
+        const response = await fetch('backend/api/login.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                username: username,
+                password: password,
+                role: role
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // Successful login
+            loginModal.style.display = 'none';
+            loginForm.reset();
+            
+            // Show success modal instead of notification
+            showLoginSuccessModal(username, role, result.redirect);
+            
+        } else {
+            // Login failed - check if it's a lockout or regular error
+            let errorMessage = result.message || 'Login failed. Please try again.';
+            let isLockout = false;
+            
+            // Check for lockout scenario
+            if (result.locked_until || result.retry_after) {
+                isLockout = true;
+                if (result.retry_after) {
+                    // Start countdown timer for lockout
+                    startLockoutTimer(result.retry_after);
+                }
+            } else {
+                // Customize regular error messages for better user experience
+                if (errorMessage === 'Invalid username or password') {
+                    errorMessage = 'Invalid username or password. Please check your credentials and try again.';
+                } else if (errorMessage.includes('You do not have access to the')) {
+                    errorMessage = 'Access denied. You do not have permission to access this role.';
+                } else if (errorMessage === 'Login system error. Please try again.') {
+                    errorMessage = 'System error occurred. Please try again or contact support.';
+                } else if (errorMessage === 'Invalid role selected') {
+                    errorMessage = 'Please select a valid role from the dropdown.';
+                }
+            }
+            
+            showLoginError(errorMessage, isLockout);
+        }
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        showLoginError('Network error. Please check your connection and try again.');
+    } finally {
+        // Reset button state only if not locked out
+        submitBtn.classList.remove('loading');
+        if (!lockoutTimer) {
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+            submitBtn.style.opacity = '1';
+            submitBtn.style.cursor = 'pointer';
+        } else {
+            // During lockout, just reset the text
+            submitBtn.textContent = originalText;
+        }
+    }
+});
+
+// Password visibility toggle functionality
+const passwordField = document.getElementById('password');
+const toggleButton = document.getElementById('togglePassword');
+
+if (passwordField && toggleButton) {
+    // Show/hide toggle button based on password field content
+    function updatePasswordToggle() {
+        if (passwordField.value.length > 0) {
+            toggleButton.style.display = 'block';
+        } else {
+            toggleButton.style.display = 'none';
+        }
+    }
+
+    // Update toggle visibility when typing
+    passwordField.addEventListener('input', updatePasswordToggle);
+    
+    // Keep toggle visible when navigating between fields
+    passwordField.addEventListener('focus', updatePasswordToggle);
+    passwordField.addEventListener('blur', updatePasswordToggle);
+    
+    // Monitor all form fields
+    const allInputs = document.querySelectorAll('#loginModal input, #loginModal select');
+    allInputs.forEach(input => {
+        input.addEventListener('focus', updatePasswordToggle);
+        input.addEventListener('blur', updatePasswordToggle);
+    });
+
+    // Toggle password visibility
+    toggleButton.addEventListener('click', function() {
+        const isPassword = passwordField.type === 'password';
+        const iconElement = toggleButton.querySelector('i');
+        passwordField.type = isPassword ? 'text' : 'password';
+        if (iconElement) {
+            iconElement.className = isPassword ? 'fas fa-eye-slash' : 'fas fa-eye';
+        }
+    });
+
+    // Reset when modal closes
+    closeModal.addEventListener('click', () => {
+        const iconElement = toggleButton.querySelector('i');
+        passwordField.type = 'password';
+        if (iconElement) {
+            iconElement.className = 'fas fa-eye';
+        }
+        toggleButton.style.display = 'none';
+    });
+}
+
+// Get Started modal functionality
+const getStartedLink = document.querySelector('.get-started-link');
+const getStartedModal = document.getElementById('getStartedModal');
+const closeGetStarted = document.querySelector('.close-getstarted');
+
+getStartedLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    getStartedModal.style.display = 'block';
+});
+
+closeGetStarted.addEventListener('click', () => {
+    getStartedModal.style.display = 'none';
+});
+
+// Handle inspection category change
+const inspectionCategorySelect = document.getElementById('inspectionCategory');
+const propertyClassLabel = document.getElementById('propertyClassLabel');
+const propertyClassSelect = document.getElementById('propertyClass');
+const requestedDateLabel = document.getElementById('requestedDateLabel');
+const requestedDateInput = document.getElementById('requestedDate');
+const calendarContainer = document.getElementById('calendarContainer');
+
+// Calendar variables
+let currentCalendarMonth = new Date().getMonth() + 1;
+let currentCalendarYear = new Date().getFullYear();
+let selectedDate = null;
+let calendarData = null;
+
+// Calendar functions
+async function loadCalendarData(month, year) {
+    try {
+        const response = await fetch(`backend/get_calendar_availability.php?month=${month}&year=${year}`);
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.error || 'Failed to load calendar data');
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('Error loading calendar data:', error);
+        showCalendarError('Failed to load calendar. Please try again.');
+        return null;
+    }
+}
+
+function showCalendarError(message) {
+    const calendarGrid = document.getElementById('calendarGrid');
+    calendarGrid.innerHTML = `
+        <div class="calendar-loading" style="grid-column: 1 / -1;">
+            <i class="fas fa-exclamation-triangle" style="color: #dc3545;"></i>
+            <div>${message}</div>
+        </div>
+    `;
+}
+
+function showCalendarLoading() {
+    const calendarGrid = document.getElementById('calendarGrid');
+    calendarGrid.innerHTML = `
+        <div class="calendar-loading" style="grid-column: 1 / -1;">
+            <i class="fas fa-spinner"></i>
+            <div>Loading calendar...</div>
+        </div>
+    `;
+}
+
+async function renderCalendar(data) {
+    calendarData = data;
+    
+    // Update title
+    document.getElementById('calendarTitle').textContent = `${data.monthName} ${data.year}`;
+    
+    // Get first day of month (0 = Sunday, 6 = Saturday)
+    const firstDay = new Date(data.year, data.month - 1, 1).getDay();
+    const startOffset = firstDay; // Sunday = 0, so no conversion needed
+    
+    const calendarGrid = document.getElementById('calendarGrid');
+    calendarGrid.innerHTML = '';
+    
+    // Load blocked dates - ensure dateBlockingValidator is ready
+    let blockedDates = [];
+    if (window.dateBlockingValidator) {
+        try {
+            await window.dateBlockingValidator.loadBlockedDates();
+            blockedDates = window.dateBlockingValidator.getBlockedDates();
+            console.log('Calendar: Loaded blocked dates:', blockedDates);
+        } catch (error) {
+            console.warn('Calendar: Failed to load blocked dates:', error);
+        }
+    } else {
+        console.warn('Calendar: dateBlockingValidator not available yet, blocked dates will not be shown');
+    }
+    
+    // Add empty cells for days before month starts
+    for (let i = 0; i < startOffset; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty';
+        calendarGrid.appendChild(emptyDay);
+    }
+    
+    // Add days of the month
+    data.availability.forEach(dayData => {
+        const dayElement = document.createElement('div');
+        
+        // Check if this date is blocked
+        const isBlocked = blockedDates.includes(dayData.date);
+        
+        if (isBlocked) {
+            dayElement.className = `calendar-day blocked`;
+        } else {
+            dayElement.className = `calendar-day ${dayData.status}`;
+        }
+        
+        dayElement.textContent = dayData.day;
+        dayElement.dataset.date = dayData.date;
+        
+        // Add class for days that are actually fully booked (5+ Machinery/Building requests)
+        // Only make unavailable if status is 'booked', not just because it has some inspections
+        if (dayData.status === 'booked') {
+            dayElement.classList.add('has-inspections');
+        }
+        
+        // Add click handler for available days (even with some inspections, as long as not fully booked)
+        if (dayData.isSelectable && !isBlocked) {
+            dayElement.addEventListener('click', () => selectDate(dayData.date, dayElement));
+        }
+        
+        // Add tooltips
+        let tooltipText = '';
+        if (isBlocked) {
+            // Get block reason if available
+            const blockInfo = window.dateBlockingValidator ? window.dateBlockingValidator.getBlockedDateInfo(dayData.date) : null;
+            tooltipText = blockInfo ? `Unavailable - ${blockInfo.reason}` : 'Unavailable';
+        } else if (dayData.status === 'booked') {
+            tooltipText = 'Fully booked';
+        } else if (dayData.hasScheduledInspections && dayData.status === 'available') {
+            const count = dayData.machineryBuildingCount || 0;
+            tooltipText = `Available (${count} Machinery/Building requests scheduled)`;
+        } else if (dayData.status === 'weekend') {
+            tooltipText = 'Weekend';
+        } else if (dayData.status === 'holiday') {
+            tooltipText = dayData.holidayName ? `Holiday: ${dayData.holidayName}` : 'Holiday';
+        } else if (dayData.status === 'past') {
+            tooltipText = 'Past date';
+        } else if (dayData.status === 'available') {
+            tooltipText = 'Available';
+        }
+        
+        if (tooltipText) {
+            dayElement.title = tooltipText;
+        }
+        
+        calendarGrid.appendChild(dayElement);
+    });
+}
+
+async function selectDate(date, element) {
+    // Check if date is blocked before allowing selection
+    if (window.dateBlockingValidator) {
+        const validation = await window.dateBlockingValidator.validateDateSelection(date);
+        if (!validation.valid) {
+            // Show error message
+            window.dateBlockingValidator.showValidationMessage(validation.message, true);
+            return; // Don't allow selection
+        } else {
+            // Clear any existing error messages
+            window.dateBlockingValidator.clearValidationMessage();
+        }
+    }
+    
+    // Remove previous selection
+    document.querySelectorAll('.calendar-day.selected').forEach(el => {
+        el.classList.remove('selected');
+    });
+    
+    // Add selection to clicked element
+    element.classList.add('selected');
+    selectedDate = date;
+    
+    // Update hidden input
+    requestedDateInput.value = date;
+    
+    updateSelectedDateDisplay();
+}
+
+function updateSelectedDateDisplay() {
+    const display = document.getElementById('selectedDateDisplay');
+    
+    if (selectedDate) {
+        const date = new Date(selectedDate);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+        display.textContent = `Selected: ${formattedDate}`;
+        display.style.background = 'var(--accent-green)';
+        display.style.color = 'var(--dark-green)';
+    } else {
+        display.textContent = 'No date selected';
+        display.style.background = 'var(--very-light-green)';
+        display.style.color = 'var(--primary-green)';
+    }
+}
+
+async function changeCalendarMonth(direction) {
+    let newMonth = currentCalendarMonth + direction;
+    let newYear = currentCalendarYear;
+    
+    if (newMonth > 12) {
+        newMonth = 1;
+        newYear++;
+    } else if (newMonth < 1) {
+        newMonth = 12;
+        newYear--;
+    }
+    
+    // Don't allow going to past months
+    const today = new Date();
+    const targetDate = new Date(newYear, newMonth - 1, 1);
+    const currentDate = new Date(today.getFullYear(), today.getMonth(), 1);
+    
+    if (targetDate < currentDate) {
+        return; // Don't go to past months
+    }
+    
+    currentCalendarMonth = newMonth;
+    currentCalendarYear = newYear;
+    
+    showCalendarLoading();
+    const data = await loadCalendarData(currentCalendarMonth, currentCalendarYear);
+    if (data) {
+        await renderCalendar(data);
+    }
+}
+
+// Initialize calendar navigation
+document.getElementById('prevMonth').addEventListener('click', () => changeCalendarMonth(-1));
+document.getElementById('nextMonth').addEventListener('click', () => changeCalendarMonth(1));
+
+// Initialize calendar when first shown
+async function initializeCalendar() {
+    console.log('Initializing calendar...');
+    
+    // Wait for dateBlockingValidator to be ready
+    let attempts = 0;
+    const maxAttempts = 50; // 5 seconds max wait
+    
+    while (!window.dateBlockingValidator && attempts < maxAttempts) {
+        console.log('Waiting for dateBlockingValidator...');
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+    }
+    
+    if (!window.dateBlockingValidator) {
+        console.warn('dateBlockingValidator not available after waiting, proceeding without blocked dates functionality');
+    } else {
+        console.log('dateBlockingValidator is ready');
+    }
+    
+    showCalendarLoading();
+    const data = await loadCalendarData(currentCalendarMonth, currentCalendarYear);
+    if (data) {
+        await renderCalendar(data);
+    }
+}
+
+inspectionCategorySelect.addEventListener('change', function() {
+    if (this.value === 'Property') {
+        // Show property classification, hide calendar
+        propertyClassLabel.style.display = 'block';
+        propertyClassSelect.style.display = 'block';
+        propertyClassSelect.required = true;
+        
+        requestedDateLabel.style.display = 'none';
+        calendarContainer.style.display = 'none';
+        requestedDateInput.required = false;
+        requestedDateInput.value = '';
+        selectedDate = null;
+        updateSelectedDateDisplay();
+    } else if (this.value === 'Machinery' || this.value === 'Building') {
+        // Hide property classification, show calendar
+        propertyClassLabel.style.display = 'none';
+        propertyClassSelect.style.display = 'none';
+        propertyClassSelect.required = false;
+        propertyClassSelect.value = '';
+        
+        requestedDateLabel.style.display = 'block';
+        calendarContainer.style.display = 'block';
+        requestedDateInput.required = true;
+        
+        // Initialize calendar if not already done
+        if (!calendarData) {
+            initializeCalendar();
+        }
+    } else {
+        // Hide both when no category selected
+        propertyClassLabel.style.display = 'none';
+        propertyClassSelect.style.display = 'none';
+        propertyClassSelect.required = false;
+        propertyClassSelect.value = '';
+        
+        requestedDateLabel.style.display = 'none';
+        calendarContainer.style.display = 'none';
+        requestedDateInput.required = false;
+        requestedDateInput.value = '';
+        selectedDate = null;
+        updateSelectedDateDisplay();
+    }
+});
+
+window.addEventListener('click', (e) => {
+    if (e.target === getStartedModal) {
+        getStartedModal.style.display = 'none';
+    }
+});
+
+// Login Success modal functionality
+let loginRedirectTimer;
+
+function showLoginSuccessModal(username, role, redirectUrl) {
+    const modal = document.getElementById('loginSuccessModal');
+    const usernameElement = document.getElementById('loginSuccessUsername');
+    const roleElement = document.getElementById('loginSuccessRole');
+    const redirectElement = document.getElementById('loginSuccessRedirect');
+    
+    // Set the content
+    usernameElement.textContent = username;
+    roleElement.textContent = role;
+    
+    // Set redirect text based on role
+    const redirectTexts = {
+        'admin': 'Admin Dashboard',
+        'head': 'Head Assessor Dashboard', 
+        'staff': 'Staff Dashboard'
+    };
+    redirectElement.textContent = redirectTexts[role] || 'Dashboard';
+    
+    // Show the modal
+    modal.style.display = 'block';
+    
+    // Auto-redirect after 2 seconds (no countdown needed)
+    loginRedirectTimer = setTimeout(() => {
+        closeLoginSuccessModal();
+        window.location.href = redirectUrl;
+    }, 2000);
+}
+
+function closeLoginSuccessModal() {
+    const modal = document.getElementById('loginSuccessModal');
+    if (modal) {
+        modal.style.display = 'none';
+        // Clear timer
+        if (loginRedirectTimer) {
+            clearTimeout(loginRedirectTimer);
+        }
+    }
+}
+
+// Professional Success Modal Functions
+function showSuccessModal() {
+    const modal = document.getElementById('requestSuccessModal');
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        
+        // Add entrance animation
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.transform = 'scale(0.9)';
+            modalContent.style.opacity = '0';
+            setTimeout(() => {
+                modalContent.style.transition = 'all 0.3s ease';
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }, 50);
+        }
+    }
+}
+
+function closeSuccessModal() {
+    const modal = document.getElementById('requestSuccessModal');
+    if (modal) {
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.transform = 'scale(0.95)';
+            modalContent.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }, 200);
+        } else {
+            modal.style.display = 'none';
+        }
+    }
+}
+
+// Professional Error Modal Functions
+function showErrorModal(title, message, errorType = 'error', retryTime = null) {
+    const modal = document.getElementById('requestErrorModal');
+    const errorTitle = document.getElementById('errorTitle');
+    const errorSubtitle = document.getElementById('errorSubtitle');
+    const errorMessage = document.getElementById('errorMessage');
+    const errorIcon = document.getElementById('errorIcon');
+    const retryInfo = document.getElementById('retryInfo');
+    const retryText = document.getElementById('retryTime');
+    
+    // Set content
+    errorTitle.textContent = title;
+    errorMessage.textContent = message;
+    
+    // Configure based on error type
+    switch (errorType) {
+        case 'rate_limit':
+            errorSubtitle.textContent = 'Submission limit reached';
+            errorIcon.style.background = 'linear-gradient(135deg, #ffc107 0%, #fd7e14 100%)';
+            errorIcon.innerHTML = '<i class="fas fa-clock" style="color: white; font-size: 1.5rem; font-weight: 600;"></i>';
+            break;
+        case 'duplicate':
+            errorSubtitle.textContent = 'Duplicate request detected';
+            errorIcon.style.background = 'linear-gradient(135deg, #17a2b8 0%, #20c997 100%)';
+            errorIcon.innerHTML = '<i class="fas fa-copy" style="color: white; font-size: 1.5rem; font-weight: 600;"></i>';
+            break;
+        case 'security':
+            errorSubtitle.textContent = 'Security validation required';
+            errorIcon.style.background = 'linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%)';
+            errorIcon.innerHTML = '<i class="fas fa-shield-alt" style="color: white; font-size: 1.5rem; font-weight: 600;"></i>';
+            break;
+        default:
+            errorSubtitle.textContent = 'Please review the information below';
+            errorIcon.style.background = 'linear-gradient(135deg, #dc3545 0%, #e74c3c 100%)';
+            errorIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: white; font-size: 1.5rem; font-weight: 600;"></i>';
+    }
+    
+    // Show retry time if available
+    if (retryTime) {
+        retryText.textContent = `Next submission available: ${retryTime.toLocaleString()}`;
+        retryInfo.style.display = 'block';
+    } else {
+        retryInfo.style.display = 'none';
+    }
+    
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.style.alignItems = 'center';
+        modal.style.justifyContent = 'center';
+        
+        // Add entrance animation
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.transform = 'scale(0.9)';
+            modalContent.style.opacity = '0';
+            setTimeout(() => {
+                modalContent.style.transition = 'all 0.3s ease';
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }, 50);
+        }
+    }
+}
+
+function closeErrorModal() {
+    const modal = document.getElementById('requestErrorModal');
+    if (modal) {
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.style.transform = 'scale(0.95)';
+            modalContent.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.display = 'none';
+                modalContent.style.transform = 'scale(1)';
+                modalContent.style.opacity = '1';
+            }, 200);
+        } else {
+            modal.style.display = 'none';
+        }
+    }
+}
+
+// Terms and Conditions Modal Functions
+function openTermsModal() {
+    const modal = document.getElementById('termsModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeTermsModal() {
+    const modal = document.getElementById('termsModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Privacy Policy Modal Functions
+function openPrivacyModal() {
+    const modal = document.getElementById('privacyModal');
+    if (modal) {
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closePrivacyModal() {
+    const modal = document.getElementById('privacyModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Close terms modal when clicking outside
+document.addEventListener('click', function(event) {
+    const termsModal = document.getElementById('termsModal');
+    if (termsModal && event.target === termsModal) {
+        closeTermsModal();
+    }
+});
+
+// Close privacy modal when clicking outside
+document.addEventListener('click', function(event) {
+    const privacyModal = document.getElementById('privacyModal');
+    if (privacyModal && event.target === privacyModal) {
+        closePrivacyModal();
+    }
+});
+
+// Add event listeners for terms and privacy links
+document.addEventListener('DOMContentLoaded', function() {
+    const viewTermsLink = document.getElementById('viewTermsLink');
+    const viewPrivacyLink = document.getElementById('viewPrivacyLink');
+    
+    if (viewTermsLink) {
+        viewTermsLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            openTermsModal();
+        });
+    }
+    
+    if (viewPrivacyLink) {
+        viewPrivacyLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            openPrivacyModal(); // Now opens the correct Privacy modal
+        });
+    }
+});
+
+// Close modal when clicking outside
+document.addEventListener('click', function(event) {
+    const modal = document.getElementById('requestSuccessModal');
+    if (modal && event.target === modal) {
+        closeSuccessModal();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const slides = document.querySelectorAll('.slideshow-slide');
+    let current = 0;
+
+    function showSlides(idx) {
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active', 'next', 'next2', 'prev', 'prev2');
+            if (i === idx) {
+                slide.classList.add('active');
+            } else if (i === (idx + 1) % slides.length) {
+                slide.classList.add('next');
+            } else if (i === (idx + 2) % slides.length) {
+                slide.classList.add('next2');
+            } else if (i === (idx - 1 + slides.length) % slides.length) {
+                slide.classList.add('prev');
+            } else if (i === (idx - 2 + slides.length) % slides.length) {
+                slide.classList.add('prev2');
+            }
+        });
+    }
+
+    function nextSlide() {
+        current = (current + 1) % slides.length;
+        showSlides(current);
+    }
+
+    if (slides.length > 0) {
+        showSlides(current);
+        setInterval(nextSlide, 3000);
+    }
+});
+
+// Notification function
+function showNotification(message, type = 'info') {
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 5px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+    }
+    
+    // Set background color based on type
+    const colors = {
+        success: '#2d8659',
+        error: '#c0392b',
+        info: '#2980b9',
+        warning: '#f39c12'
+    };
+    
+    notification.style.backgroundColor = colors[type] || colors.info;
+    notification.textContent = message;
+    notification.style.opacity = '1';
+    
+    // Auto hide after 3 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+    }, 3000);
+}
+
+// Handle Get Started form submission (multipart/form-data to include file uploads)
+let isSubmitting = false; // Prevent multiple submissions
+document.querySelector('.getstarted-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    // Prevent multiple submissions
+    if (isSubmitting) {
+        console.log('Form already submitting, ignoring duplicate submission');
+        return;
+    }
+    isSubmitting = true;
+
+    const form = this;
+    
+    // Check if terms and conditions are accepted
+    const termsCheckbox = document.getElementById('termsAccepted');
+    if (!termsCheckbox || !termsCheckbox.checked) {
+        alert('Please read and accept the Terms and Conditions before submitting your request.');
+        isSubmitting = false;
+        return;
+    }
+    
+    // Client-side validation (HTML5 required/constraints)
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        isSubmitting = false;
+        return;
+    }
+
+    // Build FormData (preserves files)
+    const formData = new FormData(form);
+
+    // Convert location format from "Barangay XYZ" to "XYZ" to match database format
+    const locationVal = formData.get('location');
+    if (locationVal && typeof locationVal === 'string' && locationVal.startsWith('Barangay ')) {
+        formData.set('location', locationVal.replace('Barangay ', ''));
+    }
+
+    // Validate file input presence
+    const idFile = formData.get('validId');
+    console.log('File validation - idFile:', idFile);
+    console.log('File size:', idFile ? idFile.size : 'no file');
+    
+    if (!idFile || (idFile.size !== undefined && idFile.size === 0)) {
+        alert('Please attach a valid ID before submitting.');
+        isSubmitting = false;
+        return;
+    }
+
+    // Show loading state
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Submitting...';
+    submitBtn.disabled = true;
+
+    try {
+        console.log('Submitting form via multipart (FormData)');
+        console.log('FormData contents:');
+        for (let [key, value] of formData.entries()) {
+            console.log(key, ':', value);
+        }
+
+        const response = await fetch('backend/api/submit_request.php', {
+            method: 'POST',
+            body: formData,
+            credentials: 'same-origin'
+        });
+
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+            // Try to get the error message from the response
+            let errorMessage = `HTTP error! status: ${response.status}`;
+            let errorDetails = null;
+            
+            try {
+                const errorResult = await response.json();
+                console.error('Server error response:', errorResult);
+                
+                if (errorResult.message) {
+                    errorMessage = errorResult.message;
+                }
+                
+                // Store error details for better handling
+                errorDetails = {
+                    reason: errorResult.error || 'UNKNOWN_ERROR',
+                    retry_after: errorResult.retry_after || null,
+                    status: response.status
+                };
+                
+            } catch (e) {
+                // If we can't parse the error response, try to get text
+                try {
+                    const errorText = await response.text();
+                    console.error('Server error text:', errorText);
+                    errorMessage = errorText || errorMessage;
+                } catch (e2) {
+                    console.error('Could not read error response:', e2);
+                }
+            }
+            
+            // Create error object with details
+            const error = new Error(errorMessage);
+            error.details = errorDetails;
+            throw error;
+        }
+
+        // Server should return JSON
+        let result;
+        try {
+            result = await response.json();
+        } catch (err) {
+            // If server doesn't return JSON, treat as success when 2xx
+            result = { success: true };
+        }
+
+        console.log('Response result:', result);
+        if (result.success) {
+            // Show professional success modal instead of simple notification
+            showSuccessModal();
+            document.getElementById('getStartedModal').style.display = 'none';
+            form.reset();
+        } else {
+            console.error('Server error:', result);
+            
+            // Determine error type from server response
+            let errorType = 'error';
+            let title = 'SYSTEM NOTICE';
+            
+            if (result.message && result.message.includes('Duplicate request')) {
+                errorType = 'duplicate';
+                title = 'DUPLICATE SUBMISSION DETECTED';
+            } else if (result.message && result.message.includes('rate limit')) {
+                errorType = 'rate_limit';
+                title = 'REQUEST LIMIT NOTICE';
+            } else if (result.message && result.message.includes('Security validation')) {
+                errorType = 'security';
+                title = 'SECURITY VALIDATION NOTICE';
+            }
+            
+            const message = result.message || 'Failed to submit request. Please try again.';
+            showErrorModal(title, message, errorType);
+        }
+
+    } catch (error) {
+        console.error('Submission error:', error);
+        isSubmitting = false; // Reset submission flag
+        
+        let alertMessage = 'An unexpected error occurred. Please try again.';
+        
+        // Handle different types of errors with appropriate messages
+        if (error.details) {
+            const { reason, retry_after, status } = error.details;
+            let title = 'Request Notice';
+            let message = 'An unexpected error occurred. Please try again.';
+            let errorType = 'error';
+            let retryTime = retry_after ? new Date(retry_after) : null;
+            
+            switch (reason) {
+                case 'HOURLY_RATE_LIMIT':
+                    title = 'REQUEST LIMIT NOTICE';
+                    message = 'Dear Applicant,\n\nYou have reached the hourly submission limit of 3 assessment requests. This policy ensures fair access to our services for all residents.\n\nPlease wait one hour before submitting additional requests.\n\nThank you for your understanding.\n\n- Office of the Municipal Assessor';
+                    errorType = 'rate_limit';
+                    break;
+                    
+                case 'DAILY_RATE_LIMIT':
+                case 'CLIENT_BLOCKED':
+                    title = 'DAILY SUBMISSION LIMIT REACHED';
+                    message = 'Dear Applicant,\n\nYou have reached the maximum daily limit of 15 assessment requests. Your account access has been temporarily restricted to maintain system integrity.\n\nIf you require urgent assessment services, please contact our office directly during business hours.\n\nContact: Office of the Municipal Assessor\nEmail: assessor@mabini.gov.ph\n\n- Municipal Assessor\'s Office, Mabini, Batangas';
+                    errorType = 'rate_limit';
+                    break;
+                    
+                case 'DUPLICATE_REQUEST':
+                    title = 'DUPLICATE SUBMISSION DETECTED';
+                    message = 'Dear Applicant,\n\nOur system has detected that this request is identical to a recent submission. To prevent duplicate processing and ensure accurate record-keeping, identical requests within 30 minutes are not permitted.\n\nPlease review your previous submissions or contact our office if you believe this is an error.\n\n- Office of the Municipal Assessor';
+                    errorType = 'duplicate';
+                    break;
+                    
+                case 'BOT_DETECTED':
+                case 'SUBMISSION_TOO_FAST':
+                    title = 'SUBMISSION VALIDATION REQUIRED';
+                    message = 'Dear Applicant,\n\nYour submission requires additional validation. To ensure the security and integrity of our assessment system, please:\n\n• Complete all form fields manually\n• Take adequate time to review your information\n• Resubmit your request\n\nThank you for your cooperation.\n\n- Office of the Municipal Assessor';
+                    errorType = 'security';
+                    break;
+                    
+                case 'SECURITY_ERROR':
+                    title = 'SECURITY VALIDATION NOTICE';
+                    message = 'Dear Applicant,\n\nYour request could not be processed due to security validation requirements. This may occur due to:\n\n• Incomplete or invalid information\n• System connectivity issues\n• Security policy compliance\n\nPlease verify all information is complete and accurate, then resubmit your request.\n\n- Office of the Municipal Assessor';
+                    errorType = 'security';
+                    break;
+                    
+                default:
+                    // Use the server's message if available
+                    message = error.message || message;
+                    title = 'SYSTEM NOTICE';
+            }
+            
+            showErrorModal(title, message, errorType, retryTime);
+            
+        } else if (error.name === 'SyntaxError') {
+            showErrorModal(
+                'SYSTEM RESPONSE NOTICE',
+                'Dear Applicant,\n\nThere was an issue processing the server response. Your assessment request may have been successfully recorded.\n\nTo verify your submission status, please contact the Municipal Assessor\'s Office.\n\nContact: assessor@mabini.gov.ph\n\n- Office of the Municipal Assessor',
+                'error'
+            );
+            
+        } else if (error.message && error.message.includes('HTTP error')) {
+            showErrorModal(
+                'TEMPORARY SERVICE NOTICE',
+                `Dear Applicant,\n\nOur assessment system is experiencing technical difficulties (${error.message}).\n\nThis is typically a temporary issue. Please try resubmitting your request in a few minutes.\n\nIf the problem persists, please contact our office for assistance.\n\n- Office of the Municipal Assessor`,
+                'error'
+            );
+            
+        } else if (error.message) {
+            // Parse error type from message content since error.details might not be available
+            let title = 'SYSTEM NOTICE';
+            let errorType = 'error';
+            let message = error.message;
+            
+            // Detect specific error types from the message content
+            if (message.includes('Duplicate request')) {
+                title = 'DUPLICATE SUBMISSION DETECTED';
+                errorType = 'duplicate';
+                message = 'Dear Applicant,\n\nOur system has detected that this request is identical to a recent submission. To prevent duplicate processing and ensure accurate record-keeping, identical requests within 30 minutes are not permitted.\n\nPlease review your previous submissions or contact our office if you believe this is an error.\n\n- Office of the Municipal Assessor';
+                
+            } else if (message.includes('rate limit') || message.includes('Rate limit') || message.includes('RATE_LIMIT')) {
+                if (message.includes('hourly') || message.includes('hour')) {
+                    title = 'REQUEST LIMIT NOTICE';
+                    errorType = 'rate_limit';
+                    message = 'Dear Applicant,\n\nYou have reached the hourly submission limit of 3 assessment requests. This policy ensures fair access to our services for all residents.\n\nPlease wait one hour before submitting additional requests.\n\nThank you for your understanding.\n\n- Office of the Municipal Assessor';
+                } else {
+                    title = 'DAILY SUBMISSION LIMIT REACHED';
+                    errorType = 'rate_limit';
+                    message = 'Dear Applicant,\n\nYou have reached the maximum daily limit of 15 assessment requests. Your account access has been temporarily restricted to maintain system integrity.\n\nIf you require urgent assessment services, please contact our office directly during business hours.\n\nContact: Office of the Municipal Assessor\nEmail: assessor@mabini.gov.ph\n\n- Municipal Assessor\'s Office, Mabini, Batangas';
+                }
+                
+            } else if (message.includes('Security validation') || message.includes('security') || message.includes('bot') || message.includes('automated')) {
+                title = 'SECURITY VALIDATION NOTICE';
+                errorType = 'security';
+                message = 'Dear Applicant,\n\nYour request could not be processed due to security validation requirements. This may occur due to:\n\n• Incomplete or invalid information\n• System connectivity issues\n• Security policy compliance\n\nPlease verify all information is complete and accurate, then resubmit your request.\n\n- Office of the Municipal Assessor';
+                
+            } else {
+                // Use the original error message with professional formatting
+                message = `Dear Applicant,\n\n${error.message}\n\nIf you continue to experience difficulties, please contact the Municipal Assessor\'s Office for assistance.\n\n- Office of the Municipal Assessor`;
+            }
+            
+            showErrorModal(title, message, errorType);
+        } else {
+            showErrorModal(
+                'SYSTEM NOTICE',
+                'Dear Applicant,\n\nAn unexpected error occurred while processing your request. Please try again.\n\nIf the problem persists, please contact our office for assistance.\n\n- Office of the Municipal Assessor',
+                'error'
+            );
+        }
+    } finally {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+        isSubmitting = false; // Reset submission lock
+    }
+});
+    </script>
+    
+    <!-- Security Manager Script (Simplified - No CAPTCHA) -->
+    <script src="js/security_simple.js?v=20251115001"></script>
+    <script>
+// Welcome Modal Functions
+function openWelcomeModal() {
+    console.log('Opening welcome modal');
+    const modal = document.getElementById('welcomeModal');
+    if (modal) {
+        // Check if any other modal is open first
+        const existingModals = document.querySelectorAll('.modal[style*="display: flex"], .modal[style*="display: block"]');
+        const hasOpenModal = Array.from(existingModals).some(m => m.id !== 'welcomeModal' && m.style.display !== 'none');
+        
+        if (!hasOpenModal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            document.body.classList.add('modal-open');
+            modal.setAttribute('aria-hidden', 'false');
+            const closeBtn = modal.querySelector('#closeModalBtn');
+            if (closeBtn) {
+                closeBtn.focus();
+            }
+        }
+    }
+}
+
+function closeWelcomeModal() {
+    console.log('Closing welcome modal');
+    const modal = document.getElementById('welcomeModal');
+    if (modal) {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+        document.body.classList.remove('modal-open');
+        modal.setAttribute('aria-hidden', 'true');
+        
+        // Store that user has interacted with the welcome modal in this session
+        sessionStorage.setItem('welcomeModalClosed', 'true');
+    }
+}
+
+// Make functions available globally
+window.openWelcomeModal = openWelcomeModal;
+window.closeWelcomeModal = closeWelcomeModal;
+
+// Handle welcome modal close button click
+document.addEventListener('DOMContentLoaded', function() {
+    const closeBtn = document.getElementById('closeModalBtn');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeWelcomeModal();
+        });
+    }
+    
+    // Handle welcome modal overlay click
+    const modal = document.getElementById('welcomeModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeWelcomeModal();
+            }
+        });
+    }
+    
+    // Always show welcome modal on page load with a delay
+    setTimeout(function() {
+        if (!document.body.classList.contains('modal-open')) {
+            openWelcomeModal();
+        }
+    }, 1500); // Increased delay for better UX
+});
+
+    </script>
+</body>
+</html> 
