@@ -2188,7 +2188,13 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
                 <input type="text" id="contactPerson" name="contactPerson" required placeholder="Full name of contact person">
 
                 <label for="contactNumber">Contact Number</label>
-                <input type="tel" id="contactNumber" name="contactNumber" required placeholder="e.g., 09123456789">
+                <input type="tel" id="contactNumber" name="contactNumber" required 
+                       placeholder="e.g., 09123456789" 
+                       pattern="[0-9]{11}" 
+                       maxlength="11" 
+                       minlength="11"
+                       title="Please enter exactly 11 digits"
+                       oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)">
 
                 <label for="purpose">Purpose</label>
                 <textarea id="purpose" name="purpose" rows="4" required placeholder="Describe your purpose..."></textarea>
@@ -3643,6 +3649,14 @@ document.querySelector('.getstarted-form').addEventListener('submit', async func
     isSubmitting = true;
 
     const form = this;
+    
+    // Validate contact number before submission
+    const contactNumber = form.querySelector('#contactNumber').value;
+    if (!/^[0-9]{11}$/.test(contactNumber)) {
+        alert('Contact number must be exactly 11 digits. Please check and try again.');
+        isSubmitting = false;
+        return;
+    }
     
     // Check if terms and conditions are accepted
     const termsCheckbox = document.getElementById('termsAccepted');
