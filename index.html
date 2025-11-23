@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>AssessPro - Professional Scheduling for Assessors</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -1124,22 +1127,43 @@ body {
 }
 
 .login-form button.loading {
-    pointer-events: none;
-    color: transparent;
+    pointer-events: none !important;
+    position: relative !important;
+    background: #2d6e3f !important;
+    color: white !important;
+    opacity: 0.9 !important;
+    transform: scale(0.98) !important;
+    transition: all 0.2s ease !important;
+}
+
+.login-form button.loading .button-text {
+    opacity: 0 !important;
 }
 
 .login-form button.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 20px;
-    height: 20px;
-    border: 2px solid transparent;
-    border-top: 2px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+    content: '' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 16px !important;
+    height: 16px !important;
+    border: 2px solid rgba(255,255,255,0.3) !important;
+    border-top: 2px solid white !important;
+    border-radius: 50% !important;
+    animation: buttonSpin 0.8s linear infinite !important;
+}
+
+@keyframes buttonSpin {
+    0% { transform: translate(-50%, -50%) rotate(0deg); }
+    100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Test class to verify CSS is loading */
+.loading-test {
+    background: red !important;
+    color: yellow !important;
+    border: 3px solid blue !important;
 }
 
 #loginModal .modal-content {
@@ -1205,6 +1229,25 @@ body {
         }@keyframes spin {
     0% { transform: translate(-50%, -50%) rotate(0deg); }
     100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Success state for login button */
+.login-form button.success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+    pointer-events: none;
+    transform: scale(1.02);
+    transition: all 0.3s ease;
+}
+
+.login-form button.success i {
+    animation: checkmark 0.6s ease;
+}
+
+@keyframes checkmark {
+    0% { opacity: 0; transform: scale(0.3); }
+    50% { opacity: 1; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 @keyframes fadeInDown {
@@ -2791,12 +2834,29 @@ loginForm.addEventListener('submit', async function(e) {
         return;
     }
     
-    // Show loading state
+    // Show loading state with immediate visual feedback
     const submitBtn = loginForm.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    submitBtn.textContent = '';
+    const originalHTML = submitBtn.innerHTML;
+    
+    // Debug logging to verify script is running
+    console.log('🔄 LOGIN: Starting authentication process');
+    console.log('🔄 LOGIN: Button found:', submitBtn);
+    console.log('🔄 LOGIN: Original HTML:', originalHTML);
+    
+    // Add test class first to verify CSS is working
+    submitBtn.classList.add('loading-test');
+    setTimeout(() => submitBtn.classList.remove('loading-test'), 200);
+    
+    // Simple but effective loading state
+    submitBtn.innerHTML = '<span class="button-text">Signing in...</span>';
     submitBtn.classList.add('loading');
     submitBtn.disabled = true;
+    
+    console.log('🔄 LOGIN: Loading state applied, classes:', submitBtn.className);
+    
+    // Disable form inputs during loading
+    const formInputs = loginForm.querySelectorAll('input, select');
+    formInputs.forEach(input => input.disabled = true);
     
     try {
         // Send login request to backend
@@ -2816,11 +2876,9 @@ loginForm.addEventListener('submit', async function(e) {
         const result = await response.json();
         
         if (result.success) {
-            // Successful login
+            // Keep loading state and directly show success modal
             loginModal.style.display = 'none';
             loginForm.reset();
-            
-            // Show success modal instead of notification
             showLoginSuccessModal(username, role, result.redirect);
             
         } else {
@@ -2854,17 +2912,25 @@ loginForm.addEventListener('submit', async function(e) {
     } catch (error) {
         console.error('Login error:', error);
         showLoginError('Network error. Please check your connection and try again.');
-    } finally {
-        // Reset button state only if not locked out
+        
+        // Clean up loading state on error
         submitBtn.classList.remove('loading');
-        if (!lockoutTimer) {
-            submitBtn.textContent = originalText;
+        submitBtn.innerHTML = originalHTML;
+        submitBtn.disabled = false;
+        submitBtn.style.background = '';
+        
+        // Re-enable form inputs
+        formInputs.forEach(input => input.disabled = false);
+    } finally {
+        // Only clean up on error cases, success is handled separately
+        if (!result?.success) {
+            submitBtn.classList.remove('loading');
+            submitBtn.innerHTML = originalHTML;
             submitBtn.disabled = false;
-            submitBtn.style.opacity = '1';
-            submitBtn.style.cursor = 'pointer';
-        } else {
-            // During lockout, just reset the text
-            submitBtn.textContent = originalText;
+            submitBtn.style.background = '';
+            
+            // Re-enable form inputs
+            formInputs.forEach(input => input.disabled = false);
         }
     }
 });
@@ -3240,6 +3306,20 @@ window.addEventListener('click', (e) => {
 let loginRedirectTimer;
 
 function showLoginSuccessModal(username, role, redirectUrl) {
+    // Clean up login button loading state now that we're showing the success modal
+    const submitBtn = document.querySelector('#loginForm button[type="submit"]');
+    const formInputs = document.querySelectorAll('#loginForm input, #loginForm select');
+    
+    if (submitBtn) {
+        submitBtn.classList.remove('loading');
+        submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Login';
+        submitBtn.disabled = false;
+        submitBtn.style.background = '';
+    }
+    
+    // Re-enable form inputs
+    formInputs.forEach(input => input.disabled = false);
+    
     const modal = document.getElementById('loginSuccessModal');
     const usernameElement = document.getElementById('loginSuccessUsername');
     const roleElement = document.getElementById('loginSuccessRole');
