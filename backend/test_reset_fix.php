@@ -1,10 +1,13 @@
 <?php
-// Test to verify announcements no longer reset to unread
+// Test to verify announcements no longer reset to unread - Environment aware
 
 echo "=== COMPREHENSIVE ANNOUNCEMENT RESET TEST ===\n\n";
 
+// Database connection - Environment aware
+require_once __DIR__ . '/config/db_config.php';
+
 try {
-    $pdo = new PDO('mysql:host=localhost;dbname=assesspro_db', 'root', '');
+    $pdo = new PDO('mysql:host=' . DB_HOST . ';dbname=' . DB_NAME, DB_USERNAME, DB_PASSWORD);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     echo "📊 CURRENT STATE BEFORE TEST:\n";
@@ -81,7 +84,7 @@ try {
     
     echo "\n🎯 FINAL TEST INSTRUCTIONS:\n";
     echo "============================\n";
-    echo "1. Open staff dashboard: http://localhost/Final%20Capstone_1/staff/staff-dashboard.html\n";
+    echo "1. Open staff dashboard in your browser\n";
     echo "2. Navigate to Announcements section\n";
     echo "3. Click on any unread announcements\n";
     echo "4. Refresh the page (F5)\n";

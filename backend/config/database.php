@@ -1,15 +1,11 @@
 <?php
 /**
  * Database Configuration for AssessPro System
- * XAMPP MySQL Connection
+ * Environment-aware MySQL Connection
  */
 
-// Database connection parameters
-define('DB_HOST', 'localhost');
-define('DB_USERNAME', 'root');
-define('DB_PASSWORD', ''); // Default XAMPP MySQL password is empty
-define('DB_NAME', 'assesspro_db');
-define('DB_CHARSET', 'utf8mb4');
+// Load dynamic database configuration
+require_once __DIR__ . '/db_config.php';
 
 // Connection options
 $options = [

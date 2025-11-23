@@ -21,10 +21,13 @@ class AntiSpamManager {
     
     private function initializeDatabase() {
         try {
-            $host = 'localhost';
-            $dbname = 'assesspro_db';
-            $username = 'root';
-            $password = '';
+            // Database connection - Environment aware
+            require_once __DIR__ . '/../config/db_config.php';
+            
+            $host = DB_HOST;
+            $dbname = DB_NAME;
+            $username = DB_USERNAME;
+            $password = DB_PASSWORD;
             
             $this->db = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

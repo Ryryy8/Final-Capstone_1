@@ -10,12 +10,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// Database connection
+// Database connection - Environment aware
 try {
-    $host = 'localhost';
-    $dbname = 'assesspro_db';
-    $username = 'root';
-    $password = '';
+    require_once __DIR__ . '/../config/db_config.php';
+    
+    $host = DB_HOST;
+    $dbname = DB_NAME;
+    $username = DB_USERNAME;
+    $password = DB_PASSWORD;
     
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);

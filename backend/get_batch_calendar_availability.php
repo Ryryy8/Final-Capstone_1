@@ -9,13 +9,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 try {
-    // Database connection
-    $servername = "localhost";
-    $username = "root";
-    $password = "";
-    $dbname = "assesspro_db";
+// Database connection - Environment aware
+require_once __DIR__ . '/config/db_config.php';
 
-    $conn = new mysqli($servername, $username, $password, $dbname);
+$servername = DB_HOST;
+$username = DB_USERNAME;
+$password = DB_PASSWORD;
+$dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbname);
 
     if ($conn->connect_error) {
         throw new Exception("Connection failed: " . $conn->connect_error);

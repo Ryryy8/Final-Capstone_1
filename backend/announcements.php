@@ -10,11 +10,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
     exit();
 }
 
-// Database configuration
-$host = 'localhost';
-$dbname = 'assesspro_db'; // Change to your database name
-$username = 'root';
-$password = '';
+// Database configuration - Environment aware
+require_once __DIR__ . '/config/db_config.php';
+
+$host = DB_HOST;
+$dbname = DB_NAME; // Change to your database name
+$username = DB_USERNAME;
+$password = DB_PASSWORD;
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);

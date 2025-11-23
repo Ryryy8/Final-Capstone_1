@@ -1,9 +1,11 @@
 <?php
-// Database connection configuration
-$host = 'localhost';
-$dbname = 'assesspro_db'; // Using your existing database
-$username = 'root'; // Update with your database username
-$password = ''; // Update with your database password
+// Database connection configuration - Environment aware
+require_once __DIR__ . '/config/db_config.php';
+
+$host = DB_HOST;
+$dbname = DB_NAME;
+$username = DB_USERNAME;
+$password = DB_PASSWORD;
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);

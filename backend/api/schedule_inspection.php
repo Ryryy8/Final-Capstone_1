@@ -14,7 +14,10 @@ try {
         throw new Exception('Only POST method allowed');
     }
 
-    $pdo = new PDO("mysql:host=localhost;dbname=assesspro_db", 'root', '');
+    // Database connection - Environment aware
+    require_once __DIR__ . '/../config/db_config.php';
+    
+    $pdo = new PDO("mysql:host=" . DB_HOST . ";dbname=" . DB_NAME, DB_USERNAME, DB_PASSWORD);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     $input = json_decode(file_get_contents('php://input'), true);
