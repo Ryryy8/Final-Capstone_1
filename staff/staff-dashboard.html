@@ -6,6 +6,50 @@
     <title>AssessPro - Staff Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        // IMMEDIATE SESSION CHECK AND REDIRECT
+        window.addEventListener('DOMContentLoaded', function() {
+            // Check session immediately when page loads
+            fetch('../backend/security/session_check.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (!result.success) {
+                    // Force redirect immediately
+                    window.location.href = '../index.html';
+                    window.location.replace('../index.html');
+                }
+            })
+            .catch(error => {
+                // Any error means redirect
+                window.location.href = '../index.html';
+                window.location.replace('../index.html');
+            });
+        });
+        
+        // ALSO check immediately without waiting for DOM
+        fetch('../backend/security/session_check.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-cache'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (!result.success) {
+                window.location.replace('../index.html');
+            }
+        })
+        .catch(() => {
+            window.location.replace('../index.html');
+        });
+    </script>
     <style>
         /* Calendar scheduled inspection styling */
 .calendar-table td.scheduled {
@@ -4789,98 +4833,46 @@ body {
     </div>
 
    <script>
+    // IMMEDIATE SESSION CHECK - Run before anything else loads
+    (async function() {
+        try {
+            const response = await fetch('../backend/security/session_check.php', {
+                method: 'POST',
+                credentials: 'same-origin'
+            });
+            const result = await response.json();
+            if (!result.success) {
+                window.location.href = '../index.html';
+                return;
+            }
+        } catch (error) {
+            window.location.href = '../index.html';
+            return;
+        }
+    })();
+    
     // SESSION SECURITY VALIDATION
     class SessionValidator {
         constructor() {
             this.checkInterval = 5 * 60 * 1000; // Check every 5 minutes
-            this.tabCheckInterval = 10 * 1000; // Check tabs every 10 seconds
             this.warningTime = 25 * 60 * 1000; // Warn at 25 minutes (5 min before 30 min timeout)
-            this.tabToken = this.generateTabToken();
             this.init();
-        }
-        
-        generateTabToken() {
-            return 'tab_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
         }
         
         init() {
             // Validate session immediately on page load
             this.validateSession();
-            this.validateTab();
             
             // Set up periodic session checks
             setInterval(() => {
                 this.validateSession();
             }, this.checkInterval);
             
-            // Set up tab validation
-            setInterval(() => {
-                this.validateTab();
-            }, this.tabCheckInterval);
-            
             // Track user activity to extend session
             this.setupActivityTracking();
             
             // Prevent page access via direct URL without proper authentication
             this.validatePageAccess();
-            
-            // Handle tab/window close
-            window.addEventListener('beforeunload', () => {
-                this.cleanupTab();
-            });
-            
-            // Handle page visibility change (tab switching)
-            document.addEventListener('visibilitychange', () => {
-                if (!document.hidden) {
-                    // Tab became active, validate immediately
-                    this.validateTab();
-                }
-            });
-        }
-        
-        async validateTab() {
-            try {
-                const response = await fetch('../backend/security/validate_tab.php', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        tab_token: this.tabToken,
-                        page_url: window.location.href
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (!result.success) {
-                    this.redirectToLogin(result.message || 'Multiple tabs detected');
-                    return;
-                }
-                
-            } catch (error) {
-                console.error('Tab validation error:', error);
-                // Don't redirect on network errors for tab validation
-            }
-        }
-        
-        async cleanupTab() {
-            try {
-                // Send cleanup request when tab is closing
-                fetch('../backend/security/cleanup_tab.php', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        tab_token: this.tabToken
-                    })
-                });
-            } catch (error) {
-                // Ignore cleanup errors
-            }
         }
         
         async validateSession() {
@@ -5975,10 +5967,22 @@ class StaffApp {
     }
     
     handleLogout() {
-    // Clear session storage if used for auth
-    sessionStorage.clear();
-    // Redirect to login or home page
-    window.location.href = '../index.html';
+        // Clear session storage
+        sessionStorage.clear();
+        
+        // Call server logout API to destroy session
+        fetch('../backend/api/logout.php', {
+            method: 'POST',
+            credentials: 'same-origin'
+        })
+        .then(() => {
+            // Redirect after logout
+            window.location.href = '../index.html';
+        })
+        .catch(() => {
+            // Redirect even if logout fails
+            window.location.href = '../index.html';
+        });
     }
 
     toggleSidebar() {

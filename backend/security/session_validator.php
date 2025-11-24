@@ -49,34 +49,6 @@ function validateSessionSecurity() {
         return false;
     }
     
-    // Enhanced tab detection - check for concurrent access
-    $current_time = time();
-    $tab_check_window = 5; // 5 seconds window
-    
-    if (!isset($_SESSION['last_access_time'])) {
-        $_SESSION['last_access_time'] = $current_time;
-        $_SESSION['access_count'] = 1;
-    } else {
-        $time_diff = $current_time - $_SESSION['last_access_time'];
-        
-        // If multiple rapid requests from same session (different tabs)
-        if ($time_diff < $tab_check_window) {
-            $_SESSION['access_count'] = ($_SESSION['access_count'] ?? 0) + 1;
-            
-            // More than 3 rapid accesses suggests multiple tabs
-            if ($_SESSION['access_count'] > 3) {
-                session_destroy();
-                redirectToLogin('Session security violation - multiple tab access detected');
-                return false;
-            }
-        } else {
-            // Reset counter if enough time passed
-            $_SESSION['access_count'] = 1;
-        }
-        
-        $_SESSION['last_access_time'] = $current_time;
-    }
-    
     // Check IP address if stored (optional - can be problematic with dynamic IPs)
     if (isset($_SESSION['ip_address'])) {
         $current_ip = $_SERVER['REMOTE_ADDR'] ?? '';
