@@ -6234,9 +6234,9 @@ class StaffApp {
                     <td>${request.email || 'N/A'}</td>
                     <td>
                         <span class="badge" style="background: ${
-                            request.inspection_category === 'Property' ? '#6c757d' : 
+                            request.inspection_category === 'Land Property' ? '#6c757d' : 
                             request.inspection_category === 'Machinery' ? '#007bff' : '#28a745'
-                        }; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                        }; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; white-space: nowrap;">
                             ${request.inspection_category || 'N/A'}
                         </span>
                     </td>
@@ -6352,7 +6352,7 @@ class StaffApp {
                         } else {
                             console.warn('⚠️ Email notification failed:', emailResult.message);
                         }
-                    } else if (request.inspection_category === 'Property') {
+                    } else if (request.inspection_category === 'Land Property') {
                         // Add to batch tracking system for Property inspections
                         const batchResponse = await fetch('../backend/api/batch_management.php', {
                             method: 'POST',
@@ -6559,7 +6559,7 @@ class StaffApp {
             // Prepare form data using correct database field names
             const formData = {
                 request_id: requestData.id,
-                category: requestData.inspection_category || 'Property Assessment',
+                category: requestData.inspection_category || 'Land Property Assessment',
                 property_address: requestData.location || 'N/A',
                 submission_date: requestData.created_at ? new Date(requestData.created_at).toLocaleDateString() : new Date().toLocaleDateString()
             };
@@ -8544,13 +8544,13 @@ function showRequestDetailsModal(request) {
                     <div><strong>Email:</strong> ${request.email || 'N/A'}</div>
                     <div><strong>Inspection Category:</strong> 
                         <span class="category-badge" style="background-color: ${
-                            request.inspection_category === 'Property' ? '#6c757d' : 
+                            request.inspection_category === 'Land Property' ? '#6c757d' : 
                             request.inspection_category === 'Machinery' ? '#007bff' : '#28a745'
-                        }; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                        }; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; white-space: nowrap;">
                             ${request.inspection_category || 'N/A'}
                         </span>
                     </div>
-                    ${request.inspection_category === 'Property' ? `
+                    ${request.inspection_category === 'Land Property' ? `
                     <div><strong>Property Classification:</strong> ${request.property_classification || 'N/A'}</div>
                     ` : ''}
                     ${(request.inspection_category === 'Machinery' || request.inspection_category === 'Building') && request.requested_inspection_date ? `
@@ -8589,7 +8589,7 @@ function showRequestDetailsModal(request) {
                     </p>
                 </div>
                 ` : ''}
-                ${request.inspection_category === 'Property' ? `
+                ${request.inspection_category === 'Land Property' ? `
                 <div style="margin: 1rem 0; padding: 1rem; background: #f3e5f5; border-radius: 4px; border-left: 4px solid #9c27b0;">
                     <div style="color: #7b1fa2; display: flex; align-items: center; margin-bottom: 0.5rem;">
                         <i class="fas fa-home" style="margin-right: 0.5rem;"></i>
@@ -8989,9 +8989,9 @@ async function showAcceptRequestModal(requestId) {
                             <strong>Category:</strong> 
                             <span>
                                 <span class="category-badge" style="background-color: ${
-                                    request.inspection_category === 'Property' ? '#6c757d' : 
+                                    request.inspection_category === 'Land Property' ? '#6c757d' : 
                                     request.inspection_category === 'Machinery' ? '#007bff' : '#28a745'
-                                }; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                                }; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; white-space: nowrap;">
                                     ${request.inspection_category}
                                 </span>
                             </span>
