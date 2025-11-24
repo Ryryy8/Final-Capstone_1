@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS assessment_requests (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    inspection_category VARCHAR(50) NOT NULL,
+    inspection_category VARCHAR(100) NOT NULL, -- Updated to support 'Land Property', 'Machinery', 'Building'
     requested_inspection_date DATE DEFAULT NULL,
     property_classification VARCHAR(50) DEFAULT NULL,
     location TEXT NOT NULL,

@@ -3023,12 +3023,12 @@ body {
                             </div>
                         </div>
 
-                        <!-- Property Classification (Only Property Inspections) -->
+                        <!-- Property Classification (Only Land Property Inspections) -->
                         <div class="chart-card">
                             <div class="chart-header">
                                 <div class="chart-title-section">
-                                    <h3 class="chart-title">Property Classification</h3>
-                                    <p class="chart-subtitle">Property types for property assessments only</p>
+                                    <h3 class="chart-title">Land Property Classification</h3>
+                                    <p class="chart-subtitle">Property types for land property assessments only</p>
                                 </div>
                                 <div class="chart-actions">
                                     <button class="chart-action-btn" onclick="exportChart('propertyClassification')" title="Export chart data as CSV">
@@ -4170,7 +4170,7 @@ class HeadApp {
         // Render barangay distribution chart
         this.renderBarangayChart(data.barangay_distribution);
         
-        // Render property classification chart (only Property inspections)
+        // Render property classification chart (only Land Property inspections)
         this.renderPropertyChart(data.property_classification);
         
         // Render inspection type distribution chart

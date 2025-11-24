@@ -1993,7 +1993,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     <section id="home" class="hero">
         <div class="hero-content">
             <div class="hero-text">
-                <h1>Office of the Municipal Assessor Mabini Batangas</h1>
+                <h1>The Municipal Assessor's office Mabini, Batangas</h1>
             </div>
             <!-- hero-image removed as requested (visual preview card) -->
         </div>
@@ -2081,7 +2081,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
             <span class="close-getstarted">&times;</span>
             <h2>Inspection Request Form</h2>
             <form class="getstarted-form">
-                <label for="clientName">Name</label>
+                <label for="clientName"> Full Name</label>
                 <input type="text" id="clientName" name="clientName" required>
 
                 <label for="clientEmail">Email</label>
@@ -2092,7 +2092,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
                     <option value="">Select Category</option>
                     <option value="Machinery">Machinery</option>
                     <option value="Building">Building</option>
-                    <option value="Property">Property</option>
+                    <option value="Land Property">Land Property</option>
                 </select>
 
                 <label for="propertyClass" id="propertyClassLabel" style="display: none;">Classification of Property</label>
@@ -2888,7 +2888,16 @@ loginForm.addEventListener('submit', async function(e) {
             showLoginSuccessModal(username, role, result.redirect);
             
         } else {
-            // Login failed - check if it's a lockout or regular error
+            // Login failed - clean up loading state immediately
+            submitBtn.classList.remove('loading');
+            submitBtn.innerHTML = originalHTML;
+            submitBtn.disabled = false;
+            submitBtn.style.background = '';
+            
+            // Re-enable form inputs
+            formInputs.forEach(input => input.disabled = false);
+            
+            // Check if it's a lockout or regular error
             let errorMessage = result.message || 'Login failed. Please try again.';
             let isLockout = false;
             
@@ -2928,16 +2937,8 @@ loginForm.addEventListener('submit', async function(e) {
         // Re-enable form inputs
         formInputs.forEach(input => input.disabled = false);
     } finally {
-        // Only clean up on error cases, success is handled separately
-        if (!result?.success) {
-            submitBtn.classList.remove('loading');
-            submitBtn.innerHTML = originalHTML;
-            submitBtn.disabled = false;
-            submitBtn.style.background = '';
-            
-            // Re-enable form inputs
-            formInputs.forEach(input => input.disabled = false);
-        }
+        // Cleanup is now handled in each specific case (success/error)
+        // No additional cleanup needed here
     }
 });
 
@@ -3259,7 +3260,7 @@ async function initializeCalendar() {
 }
 
 inspectionCategorySelect.addEventListener('change', function() {
-    if (this.value === 'Property') {
+    if (this.value === 'Land Property') {
         // Show property classification, hide calendar
         propertyClassLabel.style.display = 'block';
         propertyClassSelect.style.display = 'block';

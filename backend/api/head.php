@@ -463,17 +463,16 @@ class HeadAnalytics {
     }
     
     private function getPropertyClassification($startDate, $endDate) {
-        // Only get property classification for actual Property inspections
+        // Only get property classification for actual Land Property inspections
         $query = "
             SELECT 
-                CASE 
-                    WHEN property_classification IS NULL OR property_classification = '' THEN 'Unclassified Property'
-                    ELSE property_classification
-                END as classification_category,
+                property_classification as classification_category,
                 COUNT(*) as count 
             FROM assessment_requests 
             WHERE created_at BETWEEN ? AND ? 
-            AND inspection_category = 'Property'
+            AND inspection_category = 'Land Property'
+            AND property_classification IS NOT NULL 
+            AND property_classification != ''
             GROUP BY classification_category 
             ORDER BY count DESC
         ";
@@ -523,7 +522,7 @@ class HeadAnalytics {
     
     private function mapInspectionTypeName($type) {
         $mapping = [
-            'Property' => 'Property Assessment',
+            'Land Property' => 'Land Property Assessment',
             'Building' => 'Building Inspection', 
             'Machinery' => 'Machinery Inspection'
         ];
@@ -536,8 +535,7 @@ class HeadAnalytics {
             'Residential' => 'Residential Properties',
             'Commercial' => 'Commercial Properties', 
             'Agricultural' => 'Agricultural Land',
-            'Industrial' => 'Industrial Properties',
-            'Unclassified Property' => 'Unclassified Properties'
+            'Industrial' => 'Industrial Properties'
         ];
         
         return $mapping[$classification] ?? ucfirst($classification);
