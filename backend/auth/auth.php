@@ -96,6 +96,15 @@ class AuthSystem {
             $_SESSION['full_name'] = $user['first_name'] . ' ' . $user['last_name'];
             $_SESSION['authenticated'] = true;
             $_SESSION['login_time'] = time();
+            $_SESSION['last_activity'] = time();
+            
+            // Security tokens for session validation
+            $_SESSION['session_token'] = bin2hex(random_bytes(32));
+            $_SESSION['user_agent'] = $_SERVER['HTTP_USER_AGENT'] ?? '';
+            $_SESSION['ip_address'] = $_SERVER['REMOTE_ADDR'] ?? '';
+            
+            // Session regeneration for security
+            session_regenerate_id(true);
             
             // Update last login time
             $this->db->query(

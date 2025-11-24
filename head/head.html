@@ -3362,6 +3362,155 @@ You can also use **bold text** or *italic text* for emphasis."
     <!-- Chart.js CDN for analytics charts -->
         
     <script>
+        // SESSION SECURITY VALIDATION
+class SessionValidator {
+    constructor() {
+        this.checkInterval = 5 * 60 * 1000; // Check every 5 minutes
+        this.tabCheckInterval = 10 * 1000; // Check tabs every 10 seconds
+        this.warningTime = 25 * 60 * 1000; // Warn at 25 minutes
+        this.tabToken = this.generateTabToken();
+        this.init();
+    }
+    
+    generateTabToken() {
+        return 'tab_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+    }
+    
+    init() {
+        this.validateSession();
+        this.validateTab();
+        setInterval(() => this.validateSession(), this.checkInterval);
+        setInterval(() => this.validateTab(), this.tabCheckInterval);
+        this.setupActivityTracking();
+        this.validatePageAccess();
+        
+        // Handle tab/window close
+        window.addEventListener('beforeunload', () => {
+            this.cleanupTab();
+        });
+        
+        // Handle page visibility change (tab switching)
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                // Tab became active, validate immediately
+                this.validateTab();
+            }
+        });
+    }
+    
+    async validateTab() {
+        try {
+            const response = await fetch('../backend/security/validate_tab.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    tab_token: this.tabToken,
+                    page_url: window.location.href
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                this.redirectToLogin(result.message || 'Multiple tabs detected');
+                return;
+            }
+            
+        } catch (error) {
+            console.error('Tab validation error:', error);
+            // Don't redirect on network errors for tab validation
+        }
+    }
+    
+    async cleanupTab() {
+        try {
+            // Send cleanup request when tab is closing
+            fetch('../backend/security/cleanup_tab.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    tab_token: this.tabToken
+                })
+            });
+        } catch (error) {
+            // Ignore cleanup errors
+        }
+    }
+    
+    async validateSession() {
+        try {
+            const response = await fetch('../backend/security/session_check.php', {
+                method: 'POST',
+                credentials: 'same-origin'
+            });
+            const result = await response.json();
+            
+            if (!result.success) {
+                this.redirectToLogin(result.message);
+            }
+        } catch (error) {
+            console.error('Session validation error:', error);
+        }
+    }
+    
+    async validatePageAccess() {
+        try {
+            const response = await fetch('../backend/security/validate_access.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    required_role: 'head',
+                    page: 'head-dashboard'
+                })
+            });
+            const result = await response.json();
+            
+            if (!result.success) {
+                this.redirectToLogin(result.message);
+            }
+        } catch (error) {
+            this.redirectToLogin('Access validation failed');
+        }
+    }
+    
+    setupActivityTracking() {
+        const events = ['mousedown', 'keydown', 'scroll', 'click'];
+        let lastActivity = Date.now();
+        
+        const updateActivity = () => {
+            const now = Date.now();
+            if (now - lastActivity > 60000) {
+                fetch('../backend/security/update_activity.php', {
+                    method: 'POST',
+                    credentials: 'same-origin'
+                });
+                lastActivity = now;
+            }
+        };
+        
+        events.forEach(event => {
+            document.addEventListener(event, updateActivity, true);
+        });
+    }
+    
+    redirectToLogin(message = 'Session expired') {
+        console.log('Redirecting to login:', message);
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = '../index.html';
+    }
+}
+
+// Initialize session validator
+const sessionValidator = new SessionValidator();
+
         // Global variables for MySQL API configuration
 const apiBaseUrl = '../backend/';
 
