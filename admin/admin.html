@@ -1964,7 +1964,7 @@ td {
                 
                 <div class="header-right">
                     <div class="user-menu">
-                        <div class="user-avatar">SA</div>
+                        <div class="user-avatar">A</div>
                         <div class="user-info">
                             <div class="user-name">System</div>
                             <div class="user-role">Administrator</div>
@@ -3140,9 +3140,35 @@ const adminApp = new AdminApp();
 // Archive logic for All Users module
 document.addEventListener('DOMContentLoaded', function() {
     // Set user display
-    const userIdDisplay = document.querySelector('.user-name');
-    if (userIdDisplay) {
-        userIdDisplay.textContent = 'System';
+    const userNameElement = document.querySelector('.user-name');
+    const userRoleElement = document.querySelector('.user-role');
+    
+    if (userNameElement) {
+        // Fetch and display user's actual name
+        fetch('../backend/security/session_check.php', {
+            method: 'POST',
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success && result.user) {
+                const displayName = result.user.full_name && result.user.full_name.trim() 
+                    ? result.user.full_name.trim()
+                    : result.user.username;
+                userNameElement.textContent = displayName;
+                if (userRoleElement) {
+                    userRoleElement.textContent = 'Administrator';
+                }
+            } else {
+                userNameElement.textContent = 'User';
+                if (userRoleElement) {
+                    userRoleElement.textContent = 'Administrator';
+                }
+            }
+        })
+        .catch(() => {
+            userNameElement.textContent = 'Admin User';
+        });
     }
     
     const viewArchiveBtn = document.getElementById('view-archive-btn');

@@ -39,7 +39,16 @@ if (isset($_SESSION['last_activity'])) {
 $_SESSION['last_activity'] = time();
 
 $warning_threshold = 300; // 5 minutes before timeout
-$response = ['success' => true, 'message' => 'Session valid'];
+$response = [
+    'success' => true, 
+    'message' => 'Session valid',
+    'user' => [
+        'id' => $_SESSION['user_id'],
+        'username' => $_SESSION['username'],
+        'role' => $_SESSION['role'],
+        'full_name' => $_SESSION['full_name'] ?? $_SESSION['username']
+    ]
+];
 
 // Calculate remaining time for warning
 if (isset($_SESSION['last_activity'])) {

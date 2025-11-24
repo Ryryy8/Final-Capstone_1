@@ -3602,7 +3602,33 @@ class AnnouncementManager {
         
         // Set user display
         if (userIdDisplay) {
-            userIdDisplay.textContent = 'Head';
+            // Fetch and display user's actual name
+            fetch('../backend/security/session_check.php', {
+                method: 'POST',
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success && result.user) {
+                    const displayName = result.user.full_name && result.user.full_name.trim() 
+                        ? result.user.full_name.trim()
+                        : result.user.username;
+                    userIdDisplay.textContent = displayName;
+                    const userRoleElement = document.querySelector('.user-role');
+                    if (userRoleElement) {
+                        userRoleElement.textContent = 'Head Assessor';
+                    }
+                } else {
+                    userIdDisplay.textContent = 'User';
+                    const userRoleElement = document.querySelector('.user-role');
+                    if (userRoleElement) {
+                        userRoleElement.textContent = 'Head Assessor';
+                    }
+                }
+            })
+            .catch(() => {
+                userIdDisplay.textContent = 'Head Assessor';
+            });
         }
     }
 

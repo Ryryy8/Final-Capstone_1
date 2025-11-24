@@ -5067,8 +5067,34 @@ class StaffAnnouncementManager {
         console.log('✅ StaffAnnouncementManager initialized');
         
         // Set user display
+        // Fetch and display user's actual name
         if (userIdDisplay) {
-            userIdDisplay.textContent = 'Staff';
+            fetch('../backend/security/session_check.php', {
+                method: 'POST',
+                credentials: 'same-origin'
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success && result.user) {
+                    const displayName = result.user.full_name && result.user.full_name.trim() 
+                        ? result.user.full_name.trim()
+                        : result.user.username;
+                    userIdDisplay.textContent = displayName;
+                    const userRoleElement = document.querySelector('.user-role');
+                    if (userRoleElement) {
+                        userRoleElement.textContent = "Assessor's Staff";
+                    }
+                } else {
+                    userIdDisplay.textContent = 'User';
+                    const userRoleElement = document.querySelector('.user-role');
+                    if (userRoleElement) {
+                        userRoleElement.textContent = "Assessor's Staff";
+                    }
+                }
+            })
+            .catch(() => {
+                userIdDisplay.textContent = 'Staff User';
+            });
         }
         
         this.init();
