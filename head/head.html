@@ -6971,27 +6971,24 @@ function exportChart(chartType) {
 }
 
 // Logout functionality
-async function handleLogout() {
-    try {
-        // Use the correct logout endpoint
-        const response = await fetch('../backend/api/logout.php', {
-            method: 'POST',
-            credentials: 'same-origin'
-        });
-
-        // Clear local storage
-        sessionStorage.clear();
-        localStorage.clear();
-        
-        // Redirect to homepage
+function handleLogout() {
+    // Clear local storage immediately
+    sessionStorage.clear();
+    localStorage.clear();
+    
+    // Use fetch approach like staff (more reliable)
+    fetch('../backend/api/logout.php', {
+        method: 'POST',
+        credentials: 'same-origin'
+    })
+    .then(() => {
+        // Redirect after logout
         window.location.href = '../index.html';
-    } catch (error) {
-        console.error('Logout error:', error);
-        // Force logout even if server call fails
-        sessionStorage.clear();
-        localStorage.clear();
+    })
+    .catch(() => {
+        // Redirect even if logout fails
         window.location.href = '../index.html';
-    }
+    });
 }
 
 // Initialize the application

@@ -531,7 +531,7 @@ class EmailNotification {
                         <div style='background: #d4edda; padding: 15px; border-radius: 6px; margin-top: 15px; border-left: 4px solid #28a745;'>
                             <p style='margin: 0; font-weight: 600; color: #155724;'>
                                 &#9888; <strong>Important:</strong> Please ensure someone is available at the scheduled time and have all necessary documents ready for the assessor.
-                            </p>
+                            </p>    
                         </div>
                     </div>
                     
