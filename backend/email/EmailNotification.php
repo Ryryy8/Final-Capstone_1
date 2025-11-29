@@ -376,6 +376,37 @@ class EmailNotification {
     }
     
     /**
+     * Send acceptance notification to client when staff accepts their request
+     * This is sent when status changes from 'pending' to 'accepted'
+     */
+    public function sendRequestAcceptedNotification($clientData) {
+        try {
+            $this->mail->SMTPDebug = 0;
+            $this->mail->clearAddresses();
+            $this->mail->clearAttachments();
+            
+            $this->mail->setFrom($this->fromEmail, $this->fromName);
+            $this->mail->addAddress($clientData['email'], $clientData['name']);
+            
+            $this->mail->isHTML(true);
+            $this->mail->Subject = "AssessPro - Request Accepted #{$clientData['id']}";
+            
+            $htmlBody = $this->getRequestAcceptedTemplate($clientData);
+            $this->mail->Body = $htmlBody;
+            
+            $this->mail->AltBody = $this->getRequestAcceptedPlainText($clientData);
+            
+            $this->mail->send();
+            error_log("Request accepted email sent successfully to: " . $clientData['email']);
+            return true;
+            
+        } catch (Exception $e) {
+            error_log("Request accepted email failed: " . $e->getMessage());
+            return false;
+        }
+    }
+    
+    /**
      * Send batch scheduling notification for Property inspections (when 5+ requests reached)
      */
     public function sendBatchSchedulingNotification($clientsData, $barangay, $scheduleInfo) {
@@ -978,6 +1009,154 @@ class EmailNotification {
             $total = array_sum($categoryBreakdown);
             return implode(', ', $parts) . " (Total: {$total} assessments in {$barangay})";
         }
+    }
+    
+    /**
+     * Generate request accepted email template
+     */
+    private function getRequestAcceptedTemplate($clientData) {
+        $currentDate = date('F j, Y');
+        $category = $clientData['inspection_category'] ?? 'Property';
+        
+        return "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='UTF-8'>
+            <style>
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background: #f5f5f5; }
+                .container { max-width: 650px; margin: 20px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+                .header { background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 30px 20px; text-align: center; }
+                .header h1 { margin: 0; font-size: 28px; font-weight: 300; }
+                .header p { margin: 10px 0 0 0; opacity: 0.9; font-size: 16px; }
+                .content { padding: 30px; }
+                .status-badge { display: inline-block; padding: 12px 24px; background: #28a745; color: white; border-radius: 25px; font-weight: bold; font-size: 16px; margin: 15px 0; text-transform: uppercase; letter-spacing: 1px; }
+                .request-details { background: #f8f9fa; padding: 25px; border-radius: 8px; margin: 25px 0; border-left: 5px solid #28a745; }
+                .request-details h3 { margin-top: 0; color: #28a745; font-size: 20px; }
+                .detail-row { margin: 12px 0; }
+                .detail-label { font-weight: 600; color: #555; display: inline-block; min-width: 140px; }
+                .detail-value { color: #333; }
+                .next-steps { background: #d1edff; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #007bff; }
+                .next-steps h3 { margin-top: 0; color: #007bff; }
+                .highlight-box { background: #fff3cd; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #ffc107; }
+                .footer { padding: 25px; text-align: center; font-size: 13px; color: #666; background: #f8f9fa; }
+                .contact-info { background: #d4edda; padding: 15px; border-radius: 6px; margin: 15px 0; border-left: 4px solid #28a745; }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='header'>
+                    <h1>✓ Request Accepted</h1>
+                    <p>Your {$category} inspection request has been approved</p>
+                </div>
+                
+                <div class='content'>
+                    <h2>Dear {$clientData['name']},</h2>
+                    <p>Great news! Our staff has reviewed and <strong>accepted</strong> your {$category} inspection request.</p>
+                    
+                    <div class='status-badge'>✓ Accepted</div>
+                    
+                    <div class='request-details'>
+                        <h3>Request Details</h3>
+                        <div class='detail-row'>
+                            <span class='detail-label'>Request ID:</span>
+                            <span class='detail-value'>#{$clientData['id']}</span>
+                        </div>
+                        <div class='detail-row'>
+                            <span class='detail-label'>Category:</span>
+                            <span class='detail-value'>{$category}</span>
+                        </div>
+                        <div class='detail-row'>
+                            <span class='detail-label'>Location:</span>
+                            <span class='detail-value'>{$clientData['location']}</span>
+                        </div>
+                        <div class='detail-row'>
+                            <span class='detail-label'>Accepted Date:</span>
+                            <span class='detail-value'>{$currentDate}</span>
+                        </div>
+                    </div>
+                    
+                    <div class='next-steps'>
+                        <h3>What happens next?</h3>
+                        <p><strong>1. Scheduling Process:</strong> Your request is now in the scheduling queue. Our staff will coordinate with you to arrange the inspection date.</p>
+                        <p><strong>2. Notification:</strong> You will receive another email notification once your inspection has been scheduled with specific date and time details.</p>
+                        <p><strong>3. Preparation:</strong> Please ensure the property is accessible and any required documents are ready for the assessment.</p>
+                    </div>
+                    
+                    <div class='highlight-box'>
+                        <p><strong>Important:</strong> Keep this email for your records. You will be contacted within 3-5 business days with your scheduled inspection details.</p>
+                    </div>
+                    
+                    <div class='contact-info'>
+                        <p><strong>Questions or concerns?</strong><br>
+                        Contact us at: <strong>assesspro2025@gmail.com</strong><br>
+                        Phone: <strong>09989595966</strong></p>
+                    </div>
+                    
+                    <p>Thank you for choosing AssessPro for your property assessment needs.</p>
+                    
+                    <p style='margin-top: 30px;'>
+                    Best regards,<br>
+                    <strong>AssessPro Team</strong><br>
+                    Municipal Assessor's Office<br>
+                    Mabini, Batangas
+                    </p>
+                </div>
+                
+                <div class='footer'>
+                    <p>This is an automated notification from AssessPro - Municipal Property Assessment System</p>
+                    <p>&copy; " . date('Y') . " AssessPro. All rights reserved.</p>
+                </div>
+            </div>
+        </body>
+        </html>";
+    }
+    
+    /**
+     * Generate request accepted plain text version
+     */
+    private function getRequestAcceptedPlainText($clientData) {
+        $currentDate = date('F j, Y');
+        $category = $clientData['inspection_category'] ?? 'Property';
+        
+        return "
+AssessPro - Request Accepted
+
+Dear {$clientData['name']},
+
+Great news! Our staff has reviewed and ACCEPTED your {$category} inspection request.
+
+REQUEST DETAILS:
+- Request ID: #{$clientData['id']}
+- Category: {$category}
+- Location: {$clientData['location']}
+- Accepted Date: {$currentDate}
+
+WHAT HAPPENS NEXT:
+
+1. Scheduling Process: Your request is now in the scheduling queue. Our staff will coordinate with you to arrange the inspection date.
+
+2. Notification: You will receive another email notification once your inspection has been scheduled with specific date and time details.
+
+3. Preparation: Please ensure the property is accessible and any required documents are ready for the assessment.
+
+IMPORTANT: Keep this email for your records. You will be contacted within 3-5 business days with your scheduled inspection details.
+
+Questions or concerns?
+Contact us at: assesspro2025@gmail.com
+Phone: 09989595966
+
+Thank you for choosing AssessPro for your property assessment needs.
+
+Best regards,
+AssessPro Team
+Municipal Assessor's Office
+Mabini, Batangas
+
+---
+This is an automated notification from AssessPro - Municipal Property Assessment System
+© " . date('Y') . " AssessPro. All rights reserved.
+        ";
     }
 }
 ?>

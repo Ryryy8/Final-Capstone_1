@@ -2514,7 +2514,6 @@ body {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    cursor: help;
 }
 
 .action-buttons {
@@ -6747,7 +6746,7 @@ class StaffApp {
                     <td>${request.landmark || 'N/A'}</td>
                     <td>${request.land_reference || 'N/A'}</td>
                     <td>${request.contact_person || 'N/A'}</td>
-                    <td class="purpose-cell" title="${request.purpose || 'N/A'}">${(request.purpose || 'N/A').length > 30 ? (request.purpose || 'N/A').substring(0, 30) + '...' : (request.purpose || 'N/A')}</td>
+                    <td class="purpose-cell">${(request.purpose || 'N/A').length > 30 ? (request.purpose || 'N/A').substring(0, 30) + '...' : (request.purpose || 'N/A')}</td>
                     <td>${request.valid_id_name ? `<a href="../backend/api/view_valid_id.php?id=${request.id}" target="_blank" style="color: #007bff; text-decoration: none; font-weight: 500;">View</a>` : 'N/A'}</td>
                     <td>${formattedDate}</td>
                     <td><span class="status-badge accepted">Accepted</span></td>
@@ -6836,7 +6835,7 @@ class StaffApp {
                     </td>
                     <td>${request.property_classification || 'N/A'}</td>
                     <td>${request.location || 'N/A'}</td>
-                    <td class="purpose-cell" title="${request.purpose || 'N/A'}">${(request.purpose || 'N/A').length > 30 ? (request.purpose || 'N/A').substring(0, 30) + '...' : (request.purpose || 'N/A')}</td>
+                    <td class="purpose-cell">${(request.purpose || 'N/A').length > 30 ? (request.purpose || 'N/A').substring(0, 30) + '...' : (request.purpose || 'N/A')}</td>
                     <td>${formattedDate}</td>
                     <td>
                         <div class="action-buttons">
@@ -9105,22 +9104,9 @@ function showRequestDetailsModal(request) {
                         <strong>Scheduling Information</strong>
                     </div>
                     <p style="margin: 0; color: #155724;">
-                        Client has viewed the available dates calendar and mentioned preferred dates in the purpose field. 
-                        Schedule inspection based on their preferences and calendar availability.
+                        Client has viewed the available dates calendar and mentioned preferred dates in the purpose field.
                     </p>
                 </div>
-                ${request.inspection_category === 'Land Property' ? `
-                <div style="margin: 1rem 0; padding: 1rem; background: #f3e5f5; border-radius: 4px; border-left: 4px solid #9c27b0;">
-                    <div style="color: #7b1fa2; display: flex; align-items: center; margin-bottom: 0.5rem;">
-                        <i class="fas fa-home" style="margin-right: 0.5rem;"></i>
-                        <strong>Property Assessment</strong>
-                    </div>
-                    <p style="margin: 0; color: #6a1b9a;">
-                        This is a property assessment request. You will need to manually schedule the inspection 
-                        after accepting this request.
-                    </p>
-                </div>
-                ` : ''}
                 ${request.decline_reason ? `
                 <div style="margin: 1rem 0;">
                     <strong>Decline Reason:</strong>
@@ -9671,9 +9657,9 @@ function showAcceptLoadingModal(requestId) {
                     <div style="color: #28a745; font-size: 3rem; margin-bottom: 1rem;">
                         <i class="fas fa-spinner fa-spin"></i>
                     </div>
-                    <h2 style="color: #28a745; margin-bottom: 1rem;">Processing Request</h2>
+                    <h2 style="color: #28a745; margin-bottom: 1rem;">Accepting Request</h2>
                     <p style="color: #6c757d; margin-bottom: 0;">
-                        Please wait while we process the request #${requestId}...
+                        Please wait while we accept the request #${requestId}...
                     </p>
                 </div>
             </div>
@@ -10303,7 +10289,7 @@ function createRequestRow(request) {
             <td>${request.landmark}</td>
             <td>${request.landRef}</td>
             <td>${request.contactPerson}</td>
-            <td class="purpose-cell" title="${request.purpose}">${request.purpose.length > 30 ? request.purpose.substring(0, 30) + '...' : request.purpose}</td>
+            <td class="purpose-cell">${request.purpose.length > 30 ? request.purpose.substring(0, 30) + '...' : request.purpose}</td>
             <td>
                 <button class="btn btn-sm btn-outline" onclick="viewDocument('${request.validId}')">
                     <i class="fas fa-file-image"></i>

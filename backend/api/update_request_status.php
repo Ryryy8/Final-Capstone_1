@@ -84,11 +84,32 @@ try {
     $stmt->execute([':request_id' => $requestId]);
     $updatedRequest = $stmt->fetch(PDO::FETCH_ASSOC);
 
+    // Send email notification if request was accepted
+    if ($status === 'accepted' && $updatedRequest) {
+        try {
+            require_once __DIR__ . '/../email/EmailNotification.php';
+            $emailNotification = new EmailNotification();
+            
+            // Send acceptance notification email
+            $emailSuccess = $emailNotification->sendRequestAcceptedNotification($updatedRequest);
+            
+            if ($emailSuccess) {
+                error_log("Acceptance notification sent successfully for request ID: " . $requestId);
+            } else {
+                error_log("Failed to send acceptance notification for request ID: " . $requestId);
+            }
+        } catch (Exception $emailError) {
+            // Don't fail the status update if email fails, just log the error
+            error_log("Email notification error for request ID {$requestId}: " . $emailError->getMessage());
+        }
+    }
+
     // Return success response
     echo json_encode([
         'success' => true,
         'message' => 'Request status updated successfully',
-        'data' => $updatedRequest
+        'data' => $updatedRequest,
+        'email_sent' => isset($emailSuccess) ? $emailSuccess : false
     ]);
 
 } catch (PDOException $e) {
