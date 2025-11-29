@@ -1,7 +1,7 @@
 <?php
 /**
  * Barangay Batch Tracker for Property Inspections
- * Manages counting and triggering of batch notifications when 10+ requests are reached
+ * Manages counting and triggering of batch notifications when 5+ requests are reached
  */
 
 class BarangayBatchTracker {

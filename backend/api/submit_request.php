@@ -251,17 +251,16 @@ try {
 
     // Insert assessment request into database
     $sql = "INSERT INTO assessment_requests (
-            name, email, inspection_category, requested_inspection_date, property_classification, location,
+            name, email, inspection_category, property_classification, location,
             landmark, land_reference_arp, contact_person, contact_number,
-            purpose, valid_id_data, valid_id_type, valid_id_name, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')";
+            purpose_and_preferred_date, valid_id_data, valid_id_type, valid_id_name, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')";
     $stmt = $pdo->prepare($sql);
 
-    $stmt->execute([
+        $stmt->execute([
         trim($input['clientName']),
         trim($input['clientEmail']),
         $input['inspectionCategory'],
-        (isset($input['requestedDate']) && !empty(trim($input['requestedDate']))) ? $input['requestedDate'] : null,
         (isset($input['propertyClass']) && !empty(trim($input['propertyClass']))) ? $input['propertyClass'] : null,
         $input['location'],
         trim($input['landmark']),

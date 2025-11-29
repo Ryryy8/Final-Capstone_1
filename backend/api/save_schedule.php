@@ -88,6 +88,17 @@ try {
     
     $inspection_id = $pdo->lastInsertId();
 
+    // Get requests that will be scheduled in this batch (only 'accepted' ones)
+    $batch_clients_stmt = $pdo->prepare("
+        SELECT name, email, land_reference_arp, purpose_and_preferred_date as purpose, contact_person, id as request_id, inspection_category
+        FROM assessment_requests 
+        WHERE location = ? AND status = 'accepted'
+    ");
+    $batch_clients_stmt->execute([$barangay]);
+    $batch_clients = $batch_clients_stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    error_log("Found " . count($batch_clients) . " 'accepted' requests to schedule for {$barangay}");
+
     // Update assessment_requests to mark them as scheduled
     $update_stmt = $pdo->prepare("
         UPDATE assessment_requests 
@@ -99,36 +110,65 @@ try {
     
     $scheduled_count = $update_stmt->rowCount();
     
-    // Send batch scheduling emails to all clients
+        error_log("Successfully updated {$scheduled_count} requests to 'scheduled' status");
+    
+    // Validate that the counts match
+    if ($scheduled_count !== count($batch_clients)) {
+        error_log("WARNING: Mismatch between batch clients (" . count($batch_clients) . ") and updated count ({$scheduled_count})");
+    }
+    
+    // Ensure we match the expected request count from the UI
+    if ($request_count !== $scheduled_count) {
+        error_log("NOTICE: UI reported {$request_count} requests, but {$scheduled_count} were actually scheduled");
+    }
+
+    // Send batch scheduling emails to ONLY the clients that were just scheduled
     $emails_sent = 0;
     $email_errors = [];
-    $clients = [];
-    
+    $clients = $batch_clients; // Use the batch clients data
+
     try {
-        error_log("Starting email notification process...");
+        error_log("Starting email notification process for {$scheduled_count} newly scheduled requests...");
         
         // Load email notification system
         require_once '../email/EmailNotification.php';
         $emailNotification = new EmailNotification();
         error_log("EmailNotification class loaded successfully");
         
-        // Get all clients with scheduled requests for this barangay (remove DISTINCT to ensure all requests are included)
-        $client_stmt = $pdo->prepare("
-            SELECT name, email, land_reference_arp, purpose, contact_person, id as request_id
-            FROM assessment_requests 
-            WHERE location = ? AND status = 'scheduled'
-        ");
-        $client_stmt->execute([$barangay]);
-        $all_clients = $client_stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Use the batch clients (only newly scheduled ones)
+        $all_clients = $batch_clients;
+        error_log("Processing " . count($all_clients) . " clients from newly scheduled requests");
         
-        // Remove duplicates manually while preserving all unique email addresses
+        // Enhanced duplicate prevention using email + request_id combination
         $clients = [];
+        $seen_combinations = [];
         $seen_emails = [];
+        
         foreach ($all_clients as $client) {
-            if (!in_array(strtolower($client['email']), $seen_emails)) {
-                $clients[] = $client;
-                $seen_emails[] = strtolower($client['email']);
+            $email_key = strtolower(trim($client['email']));
+            $request_key = $client['request_id'];
+            $combination_key = $email_key . '|' . $request_key;
+            
+            // Skip if invalid email
+            if (empty($client['email']) || !filter_var($client['email'], FILTER_VALIDATE_EMAIL)) {
+                error_log("Skipping invalid email: " . ($client['email'] ?? 'NULL') . " for client: " . ($client['name'] ?? 'Unknown'));
+                continue;
             }
+            
+            // Skip if duplicate combination (same email + request_id)
+            if (in_array($combination_key, $seen_combinations)) {
+                error_log("Skipping duplicate request: Email {$email_key}, Request ID: {$request_key}");
+                continue;
+            }
+            
+            // Warn about same email with different request IDs (but still include)
+            if (in_array($email_key, $seen_emails)) {
+                error_log("WARNING: Same email {$email_key} found with different request ID: {$request_key}");
+            }
+            
+            $clients[] = $client;
+            $seen_combinations[] = $combination_key;
+            $seen_emails[] = $email_key;
         }
         
         error_log("Found " . count($clients) . " clients for barangay: {$barangay}");
@@ -148,10 +188,17 @@ try {
             // Prepare client data for batch email
             $clientsData = [];
             foreach ($clients as $client) {
+                // Additional validation (should not be needed due to filtering above, but safety check)
                 if (empty($client['email']) || !filter_var($client['email'], FILTER_VALIDATE_EMAIL)) {
-                    error_log("Invalid email for client: " . $client['name'] . " - " . $client['email']);
-                    $email_errors[] = "Invalid email for " . $client['name'] . ": " . $client['email'];
+                    error_log("UNEXPECTED: Invalid email found in filtered client list: " . ($client['name'] ?? 'Unknown') . " - " . ($client['email'] ?? 'NULL'));
+                    $email_errors[] = "Invalid email for " . ($client['name'] ?? 'Unknown') . ": " . ($client['email'] ?? 'NULL');
                     continue;
+                }
+                
+                // Validate required fields
+                if (empty($client['name'])) {
+                    error_log("WARNING: Missing client name for email " . $client['email'] . ", using fallback");
+                    $client['name'] = 'Valued Client';
                 }
                 
                 $clientsData[] = [
@@ -160,6 +207,7 @@ try {
                     'request_id' => $client['request_id'] ?: ('BATCH-' . strtoupper($barangay) . '-' . date('Ymd')),
                     'property_address' => $barangay . ' (exact address as per your submitted request)',
                     'property_type' => 'Property Assessment - ' . ($client['purpose'] ?: 'General Assessment'),
+                    'inspection_category' => $client['inspection_category'] ?: 'Property',
                     'area' => 'As specified in your application',
                     'submission_date' => date('F j, Y'),
                     'land_reference' => $client['land_reference_arp'] ?: 'N/A',
@@ -174,14 +222,28 @@ try {
                 // Send batch notification emails
                 try {
                     error_log("Calling sendBatchSchedulingNotification...");
-                    $emails_sent = $emailNotification->sendBatchSchedulingNotification(
+                    $email_results = $emailNotification->sendBatchSchedulingNotification(
                         $clientsData, $barangay, $scheduleInfo
                     );
-                    error_log("Batch email sending completed. Emails sent: {$emails_sent}");
+                    
+                    // Handle the new return format
+                    if (is_array($email_results)) {
+                        $emails_sent = $email_results['emails_sent'];
+                        $total_clients = $email_results['total_clients'];
+                        $email_errors = array_merge($email_errors, array_column($email_results['failed_emails'], 'reason'));
+                        error_log("Batch email completed. Sent: {$emails_sent}/{$total_clients} (Accuracy: {$email_results['accuracy']}%)");
+                    } else {
+                        // Backward compatibility
+                        $emails_sent = $email_results;
+                        $total_clients = count($clientsData);
+                        error_log("Batch email sending completed. Emails sent: {$emails_sent}");
+                    }
                 } catch (Exception $e) {
                     error_log("Batch email sending failed: " . $e->getMessage());
                     error_log("Stack trace: " . $e->getTraceAsString());
                     $email_errors[] = "Email system error: " . $e->getMessage();
+                    $emails_sent = 0;
+                    $total_clients = count($clientsData);
                 }
             } else {
                 error_log("No valid email addresses found for batch notification");
@@ -199,8 +261,8 @@ try {
     echo json_encode([
         'success' => true,
         'message' => 'Inspection scheduled successfully',
-        'emails_sent' => $emails_sent,
-        'total_clients' => count($clients ?? []),
+        'emails_sent' => $emails_sent ?? 0,
+        'total_clients' => $total_clients ?? count($clients ?? []),
         'email_errors' => $email_errors,
         'data' => [
             'id' => $inspection_id,

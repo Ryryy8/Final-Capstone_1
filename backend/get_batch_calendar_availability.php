@@ -58,13 +58,13 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
     }
 
     // Get existing batch inspections to exclude those dates
-    // Detect batch inspections by request_count >= 10 (more reliable than notes pattern)
+    // Detect batch inspections by request_count >= 5 (batch minimum requirement)
     $batchQuery = "SELECT inspection_date, COUNT(*) as batch_count, 
                           GROUP_CONCAT(CONCAT('Count: ', request_count, ' - ', notes) SEPARATOR ' | ') as all_notes
                    FROM scheduled_inspections 
                    WHERE inspection_date BETWEEN ? AND ? 
                    AND status = 'scheduled'
-                   AND request_count >= 10
+                   AND request_count >= 5
                    GROUP BY inspection_date";
     
     $stmt = $conn->prepare($batchQuery);
@@ -78,6 +78,23 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
             'batch_count' => $row['batch_count'],
             'notes' => $row['all_notes']
         ];
+    }
+
+    // Get total inspection count per date (both individual and batch)
+    $totalInspectionQuery = "SELECT inspection_date, COUNT(*) as total_inspections
+                            FROM scheduled_inspections 
+                            WHERE inspection_date BETWEEN ? AND ? 
+                            AND status = 'scheduled'
+                            GROUP BY inspection_date";
+    
+    $stmt = $conn->prepare($totalInspectionQuery);
+    $stmt->bind_param("ss", $startDate, $endDate);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $totalInspectionCounts = [];
+    while ($row = $result->fetch_assoc()) {
+        $totalInspectionCounts[$row['inspection_date']] = (int)$row['total_inspections'];
     }
 
     // Get holidays for the specified month
@@ -122,6 +139,10 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
         // Check if batch inspection is already scheduled
         $hasBatchScheduled = isset($batchScheduledDates[$currentDate]);
         
+        // Get total inspection count for this date (limit of 2 inspections per day)
+        $totalInspections = isset($totalInspectionCounts[$currentDate]) ? $totalInspectionCounts[$currentDate] : 0;
+        $hasReachedLimit = $totalInspections >= 2;
+        
         // Determine availability status for batch scheduling
         $status = 'unavailable';
         $reason = '';
@@ -135,15 +156,22 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
         } elseif (!$isWeekday) {
             $status = 'weekend';
             $reason = 'Weekend';
-        } elseif ($hasBatchScheduled) {
-            $status = 'unavailable';  // Batch already scheduled = unavailable
-            $reason = 'Batch inspection already scheduled';
+        } elseif ($hasReachedLimit) {
+            $status = 'unavailable';  // 2 or more inspections already scheduled = unavailable
+            $reason = 'Maximum 2 inspections per day limit reached (' . $totalInspections . ' scheduled)';
         } elseif ($hasIndividualInspections) {
             $status = 'available';  // Has individual inspections = available
             $reason = $individualCount . ' individual inspections available for batching';
+        } elseif ($totalInspections < 2) {
+            $status = 'available';  // Less than 2 inspections = available (including 1 batch)
+            if ($hasBatchScheduled) {
+                $reason = 'Available (1 batch scheduled, can schedule 1 more)';
+            } else {
+                $reason = 'Available for scheduling';
+            }
         } else {
-            $status = 'available';  // No individual inspections = also available
-            $reason = 'Available for scheduling';
+            $status = 'unavailable';  // Should not reach here due to hasReachedLimit check above
+            $reason = 'Not available';
         }
         
         $dayData = [
@@ -153,8 +181,10 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
             'dayName' => date('D', strtotime($currentDate)),
             'status' => $status,
             'individualCount' => $individualCount,
+            'totalInspections' => $totalInspections,
             'barangays' => $barangays,
             'hasBatchScheduled' => $hasBatchScheduled,
+            'hasReachedLimit' => $hasReachedLimit,
             'isSelectable' => ($status === 'available'),
             'reason' => $reason,
             'batchDetails' => $hasBatchScheduled ? $batchScheduledDates[$currentDate] : null

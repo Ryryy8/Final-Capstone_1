@@ -67,7 +67,7 @@ try {
                     'data' => $requests,
                     'barangay' => $barangay,
                     'count' => count($requests),
-                    'ready_for_batch' => count($requests) >= 10
+                    'ready_for_batch' => count($requests) >= 5
                 ];
                 break;
                 
@@ -142,23 +142,35 @@ try {
                 // Get all pending requests for this barangay
                 $clients = $batchTracker->getBarangayRequests($barangay);
                 
-                if (count($clients) < 10) {
+                if (count($clients) < 5) {
                     http_response_code(400);
                     echo json_encode([
                         'success' => false, 
                         'message' => 'Insufficient requests for batch scheduling',
                         'current_count' => count($clients),
-                        'minimum_required' => 10
+                        'minimum_required' => 5
                     ]);
                     exit;
                 }
 
                 // Send batch scheduling emails
-                $successCount = $emailNotification->sendBatchSchedulingNotification(
+                $emailResults = $emailNotification->sendBatchSchedulingNotification(
                     $clients,
                     $barangay,
                     $scheduleInfo
                 );
+
+                // Handle both old and new return formats for backward compatibility
+                if (is_array($emailResults)) {
+                    $successCount = $emailResults['emails_sent'];
+                    $totalClients = $emailResults['total_clients'];
+                    $failedCount = count($emailResults['failed_emails']);
+                } else {
+                    // Backward compatibility with old numeric return
+                    $successCount = $emailResults;
+                    $totalClients = count($clients);
+                    $failedCount = $totalClients - $successCount;
+                }
 
                 // Mark requests as scheduled
                 $batchTracker->markRequestsAsScheduled($barangay);
@@ -167,9 +179,9 @@ try {
                     'success' => $successCount > 0,
                     'message' => "Batch scheduling completed for {$barangay}",
                     'barangay' => $barangay,
-                    'total_clients' => count($clients),
+                    'total_clients' => $totalClients,
                     'emails_sent' => $successCount,
-                    'failed_emails' => count($clients) - $successCount,
+                    'failed_emails' => $failedCount,
                     'schedule_date' => $scheduleInfo['inspection_date']
                 ];
                 break;

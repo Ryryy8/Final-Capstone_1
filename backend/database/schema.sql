@@ -1,6 +1,7 @@
 -- ===================================================
 -- AssessPro Database Schema
 -- Municipal Property Assessment System
+-- Updated: November 29, 2025
 -- ===================================================
 
 USE assesspro_db;
@@ -60,15 +61,15 @@ CREATE TABLE IF NOT EXISTS assessment_requests (
     id INT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
-    inspection_category VARCHAR(100) NOT NULL, -- Updated to support 'Land Property', 'Machinery', 'Building'
-    requested_inspection_date DATE DEFAULT NULL,
-    property_classification VARCHAR(50) DEFAULT NULL,
+    inspection_category VARCHAR(100) NOT NULL COMMENT 'Building, Machinery, or Land Property',
+    requested_inspection_date DATE DEFAULT NULL COMMENT 'System assigned date (clients view calendar only)',
+    property_classification VARCHAR(50) DEFAULT NULL COMMENT 'Required only for Land Property category',
     location TEXT NOT NULL,
     landmark VARCHAR(255) DEFAULT NULL,
     land_reference_arp VARCHAR(100) DEFAULT NULL,
     contact_person VARCHAR(100) NOT NULL,
     contact_number VARCHAR(20) NOT NULL,
-    purpose TEXT NOT NULL,
+    purpose TEXT NOT NULL COMMENT 'Client purpose and preferred date mentioned in text',
     valid_id_data LONGBLOB DEFAULT NULL,
     valid_id_type VARCHAR(50) DEFAULT NULL,
     valid_id_name VARCHAR(255) DEFAULT NULL,
@@ -85,6 +86,8 @@ CREATE TABLE IF NOT EXISTS assessment_requests (
     INDEX idx_assigned_staff (assigned_staff_id),
     INDEX idx_created_at (created_at),
     INDEX idx_email (email),
+    INDEX idx_category_date (inspection_category, requested_inspection_date),
+    INDEX idx_location_category (location(100), inspection_category),
     
     FOREIGN KEY (assigned_staff_id) REFERENCES users(id) ON DELETE SET NULL
 );
@@ -286,7 +289,11 @@ CREATE TABLE IF NOT EXISTS schema_info (
 );
 
 INSERT IGNORE INTO schema_info (version, description) VALUES
-('1.0.0', 'Initial AssessPro database schema with all core tables');
+('1.0.0', 'Initial AssessPro database schema with all core tables'),
+('1.1.0', 'Updated assessment_requests for new calendar functionality'),
+('1.2.0', 'Added security and anti-spam protection tables'),
+('1.3.0', 'Added batch scheduling and archived inspections support'),
+('1.4.0', 'Enhanced performance with optimized indexes and views - November 29, 2025');
 
 -- ===================================================
 -- Performance Optimization Views (Optional)

@@ -35,12 +35,11 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
     $startDate = sprintf('%04d-%02d-01', $year, $month);
     $endDate = date('Y-m-t', strtotime($startDate)); // Last day of the month
 
-    $query = "SELECT inspection_date, COUNT(*) as machinery_building_count, 
-                     GROUP_CONCAT(barangay SEPARATOR ', ') as locations
+    $query = "SELECT inspection_date, COUNT(*) as total_inspections, 
+                     COUNT(DISTINCT barangay) as unique_barangays,
+                     GROUP_CONCAT(DISTINCT barangay SEPARATOR ', ') as locations
               FROM scheduled_inspections 
               WHERE inspection_date BETWEEN ? AND ? AND status = 'scheduled'
-              AND (notes LIKE '%Machinery%' OR notes LIKE '%Building%')
-              AND notes LIKE '%Individual inspection request%'
               GROUP BY inspection_date";
     
     $stmt = $conn->prepare($query);
@@ -51,7 +50,8 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
     $scheduledDates = [];
     while ($row = $result->fetch_assoc()) {
         $scheduledDates[$row['inspection_date']] = [
-            'machinery_building_count' => (int)$row['machinery_building_count'],
+            'total_inspections' => (int)$row['total_inspections'],
+            'unique_barangays' => (int)$row['unique_barangays'],
             'locations' => $row['locations']
         ];
     }
@@ -99,11 +99,12 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
         
         // Check if there are scheduled inspections
         $scheduledData = isset($scheduledDates[$currentDate]) ? $scheduledDates[$currentDate] : null;
-        $machineryBuildingCount = $scheduledData ? $scheduledData['machinery_building_count'] : 0;
+        $totalInspections = $scheduledData ? $scheduledData['total_inspections'] : 0;
+        $uniqueBarangays = $scheduledData ? $scheduledData['unique_barangays'] : 0;
         $locations = $scheduledData ? $scheduledData['locations'] : '';
         
-        // No limit on Machinery/Building requests per day (unlimited)
-        $isFullyBooked = false; // Never fully booked for Machinery/Building
+        // Date becomes unavailable if 2+ different barangays are scheduled
+        $isFullyBooked = ($uniqueBarangays >= 2);
         
         // Determine availability status
         $status = 'unavailable'; // Default
@@ -114,6 +115,8 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
             $status = 'holiday';
         } elseif (!$isWeekday) {
             $status = 'weekend';
+        } elseif ($isFullyBooked) {
+            $status = 'booked';
         } else {
             $status = 'available';
         }
@@ -124,10 +127,11 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
             'dayOfWeek' => $dayOfWeek,
             'dayName' => date('D', strtotime($currentDate)),
             'status' => $status,
-            'machineryBuildingCount' => $machineryBuildingCount,
+            'totalInspections' => $totalInspections,
+            'uniqueBarangays' => $uniqueBarangays,
             'locations' => $locations,
             'isSelectable' => ($status === 'available'),
-            'hasScheduledInspections' => ($machineryBuildingCount > 0)
+            'hasScheduledInspections' => ($totalInspections > 0)
         ];
 
         // Add holiday name if it's a holiday
@@ -146,7 +150,8 @@ $dbname = DB_NAME;    $conn = new mysqli($servername, $username, $password, $dbn
         'daysInMonth' => $daysInMonth,
         'availability' => $availability,
         'legend' => [
-            'available' => 'Available for Machinery/Building bookings (Weekdays)',
+            'available' => 'Available for inspections (Weekdays)',
+            'booked' => 'Unavailable - 2 or more barangays scheduled',
             'weekend' => 'Weekend - Not available',
             'holiday' => 'Holiday - Not available',
             'past' => 'Past date'

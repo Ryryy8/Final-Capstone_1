@@ -2627,6 +2627,37 @@ body {
     color: #e84393;
 }
 
+/* Category Badge Styles */
+.category-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+    text-align: center;
+    min-width: 70px;
+}
+
+.category-badge.land-property {
+    background: #f8f9fa;
+    color: #495057;
+    border: 1px solid #dee2e6;
+}
+
+.category-badge.machinery {
+    background: #e3f2fd;
+    color: #1565c0;
+    border: 1px solid #bbdefb;
+}
+
+.category-badge.building {
+    background: #e8f5e8;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
 /* Card Actions */
 .card-actions {
     display: flex;
@@ -4256,9 +4287,17 @@ body {
                             isDisabled = false;
                             cell.style.border = '1px solid #bbf7d0';
                             if (dayData.individualCount > 0) {
-                                tooltipText = `Available: ${dayData.individualCount} individual inspections (${dayData.barangays || 'Various locations'})`;
+                                const inspectionText = dayData.totalInspections > 0 
+                                    ? ` (${dayData.totalInspections} total scheduled)`
+                                    : '';
+                                tooltipText = `Available: ${dayData.individualCount} individual inspections${inspectionText} (${dayData.barangays || 'Various locations'})`;
+                            } else if (dayData.hasBatchScheduled && dayData.totalInspections === 1) {
+                                tooltipText = `Available: 1 batch scheduled, can schedule 1 more inspection`;
                             } else {
-                                tooltipText = 'Available for scheduling batch inspection';
+                                const inspectionText = dayData.totalInspections > 0 
+                                    ? ` (${dayData.totalInspections} already scheduled)`
+                                    : '';
+                                tooltipText = `Available for scheduling batch inspection${inspectionText}`;
                             }
                             break;
                         case 'unavailable':
@@ -4266,7 +4305,9 @@ body {
                             backgroundColor = '#fef2f2';
                             textColor = '#b91c1c';
                             cell.style.border = '1px solid #fecaca';
-                            if (dayData.hasBatchScheduled) {
+                            if (dayData.hasReachedLimit) {
+                                tooltipText = `Unavailable: Maximum 2 inspections per day (${dayData.totalInspections} scheduled)`;
+                            } else if (dayData.hasBatchScheduled) {
                                 tooltipText = 'Batch inspection already scheduled for this date';
                             } else {
                                 tooltipText = dayData.reason || 'Not available';
@@ -4307,41 +4348,63 @@ body {
                 cell.appendChild(dayNumber);
                 
                 // Add status indicator for batch scheduling availability
-                if (dayData.status === 'available' && dayData.individualCount > 0) {
+                if (dayData.totalInspections > 0) {
                     const indicator = document.createElement('div');
-                    indicator.textContent = dayData.individualCount;
-                    indicator.style.cssText = `
-                        width: 14px; height: 14px; 
-                        background: #15803d; 
-                        color: white;
-                        border-radius: 50%; 
-                        font-size: 8px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        position: absolute;
-                        top: 2px;
-                        right: 2px;
-                        font-weight: 600;
-                    `;
-                    cell.appendChild(indicator);
-                } else if (dayData.hasBatchScheduled) {
-                    const indicator = document.createElement('div');
-                    indicator.textContent = '✓';
-                    indicator.style.cssText = `
-                        width: 12px; height: 12px; 
-                        background: #b91c1c; 
-                        color: white;
-                        border-radius: 50%; 
-                        font-size: 8px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        position: absolute;
-                        top: 2px;
-                        right: 2px;
-                        font-weight: 600;
-                    `;
+                    
+                    if (dayData.hasReachedLimit) {
+                        // Show full indicator for dates at limit
+                        indicator.textContent = '2';
+                        indicator.style.cssText = `
+                            width: 16px; height: 16px; 
+                            background: #b91c1c; 
+                            color: white;
+                            border-radius: 50%; 
+                            font-size: 9px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: absolute;
+                            top: 1px;
+                            right: 1px;
+                            font-weight: 700;
+                            border: 2px solid white;
+                        `;
+                    } else if (dayData.status === 'available') {
+                        // Show count for available dates with some inspections
+                        indicator.textContent = dayData.totalInspections;
+                        indicator.style.cssText = `
+                            width: 14px; height: 14px; 
+                            background: #15803d; 
+                            color: white;
+                            border-radius: 50%; 
+                            font-size: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: absolute;
+                            top: 2px;
+                            right: 2px;
+                            font-weight: 600;
+                        `;
+                    } else {
+                        // Show checkmark for unavailable dates with inspections
+                        indicator.textContent = '✓';
+                        indicator.style.cssText = `
+                            width: 12px; height: 12px; 
+                            background: #b91c1c; 
+                            color: white;
+                            border-radius: 50%; 
+                            font-size: 8px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            position: absolute;
+                            top: 2px;
+                            right: 2px;
+                            font-weight: 600;
+                        `;
+                    }
+                    
                     cell.appendChild(indicator);
                 }
                 
@@ -4623,7 +4686,10 @@ body {
                                 <thead>
                                     <tr>
                                         <th>Barangay</th>
-                                        <th class="centered-col">Pending Request</th>
+                                        <th class="centered-col">Land Property</th>
+                                        <th class="centered-col">Machinery</th>
+                                        <th class="centered-col">Building</th>
+                                        <th class="centered-col">Total Pending</th>
                                         <th class="centered-col">Actions</th>
                                     </tr>
                                 </thead>
@@ -4655,7 +4721,6 @@ body {
                                         <th>Email</th>
                                         <th>Category</th>
                                         <th>Property Class</th>
-                                        <th>Requested Date</th>
                                         <th>Barangay</th>
                                         <th>Purpose</th>
                                         <th>Date Submitted</th>
@@ -4730,12 +4795,12 @@ body {
                                         <th>Request ID</th>
                                         <th>Client Name</th>
                                         <th>Client Email</th>
-                                        <th>Property Classification</th>
+                                        <th>Category</th>
                                         <th>Location/Barangay</th>
                                         <th>Landmark</th>
                                         <th>Land Reference</th>
                                         <th>Contact Person</th>
-                                        <th>Purpose</th>
+                                        <th>Purpose and Preferred Date</th>
                                         <th>Valid ID</th>
                                         <th>Date Submitted</th>
                                         <th>Status</th>
@@ -6677,10 +6742,10 @@ class StaffApp {
                     <td>#${request.id}</td>
                     <td>${request.name || 'N/A'}</td>
                     <td>${request.email || 'N/A'}</td>
-                    <td>${request.property_classification || 'N/A'}</td>
+                    <td><span class="category-badge ${(request.inspection_category || '').toLowerCase().replace(' ', '-')}">${request.inspection_category || 'N/A'}</span></td>
                     <td>${request.location || 'N/A'}</td>
                     <td>${request.landmark || 'N/A'}</td>
-                    <td>${request.land_reference_arp || 'N/A'}</td>
+                    <td>${request.land_reference || 'N/A'}</td>
                     <td>${request.contact_person || 'N/A'}</td>
                     <td class="purpose-cell" title="${request.purpose || 'N/A'}">${(request.purpose || 'N/A').length > 30 ? (request.purpose || 'N/A').substring(0, 30) + '...' : (request.purpose || 'N/A')}</td>
                     <td>${request.valid_id_name ? `<a href="../backend/api/view_valid_id.php?id=${request.id}" target="_blank" style="color: #007bff; text-decoration: none; font-weight: 500;">View</a>` : 'N/A'}</td>
@@ -6756,8 +6821,6 @@ class StaffApp {
             pendingRequests.forEach(request => {
                 const row = document.createElement('tr');
                 const formattedDate = new Date(request.created_at).toLocaleDateString();
-                const requestedDate = request.requested_inspection_date ? 
-                    new Date(request.requested_inspection_date).toLocaleDateString() : 'N/A';
                 
                 row.innerHTML = `
                     <td>#${request.id}</td>
@@ -6772,9 +6835,6 @@ class StaffApp {
                         </span>
                     </td>
                     <td>${request.property_classification || 'N/A'}</td>
-                    <td style="font-weight: ${request.requested_inspection_date ? '600' : 'normal'}; color: ${request.requested_inspection_date ? '#007bff' : '#6c757d'};">
-                        ${requestedDate}
-                    </td>
                     <td>${request.location || 'N/A'}</td>
                     <td class="purpose-cell" title="${request.purpose || 'N/A'}">${(request.purpose || 'N/A').length > 30 ? (request.purpose || 'N/A').substring(0, 30) + '...' : (request.purpose || 'N/A')}</td>
                     <td>${formattedDate}</td>
@@ -6820,7 +6880,7 @@ class StaffApp {
         try {
             console.log(`Processing accept request for ID: ${requestId}`);
             
-            // First, get the request details to check if it has a requested inspection date
+            // Get the request details for acceptance processing
             const requestResponse = await fetch(`../backend/api/get_requests.php?id=${requestId}`);
             const requestResult = await requestResponse.json();
             
@@ -6846,123 +6906,12 @@ class StaffApp {
             console.log('Accept request response:', result);
             
             if (result.success) {
-                // Send email notification based on inspection category
-                try {
-                    console.log(`Sending email notification for ${request.inspection_category} inspection`);
-                    
-                    if (request.inspection_category === 'Building' || request.inspection_category === 'Machinery') {
-                        // Send immediate acceptance email for Building/Machinery
-                        const emailResponse = await fetch('../backend/api/batch_management.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                action: 'send_building_acceptance',
-                                client_data: {
-                                    name: request.name || request.client_name,
-                                    email: request.email
-                                },
-                                form_data: {
-                                    request_id: requestId,
-                                    category: request.inspection_category,
-                                    property_address: `${request.location}${request.landmark ? ', ' + request.landmark : ''}`,
-                                    property_type: request.property_classification || 'Not specified',
-                                    area: 'Not specified', // Add area field to your database if needed
-                                    barangay: request.location,
-                                    submission_date: request.submission_date || new Date().toISOString().split('T')[0],
-                                    requested_inspection_date: request.requested_inspection_date || 'To be scheduled',
-                                    land_reference: request.land_reference_arp,
-                                    contact_person: request.contact_person,
-                                    purpose: request.purpose
-                                }
-                            })
-                        });
-                        
-                        const emailResult = await emailResponse.json();
-                        if (emailResult.success) {
-                            console.log('✅ Acceptance email sent successfully');
-                        } else {
-                            console.warn('⚠️ Email notification failed:', emailResult.message);
-                        }
-                    } else if (request.inspection_category === 'Land Property') {
-                        // Add to batch tracking system for Property inspections
-                        const batchResponse = await fetch('../backend/api/batch_management.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                action: 'add_property_request',
-                                barangay: request.location,
-                                client_data: {
-                                    name: request.name || request.client_name,
-                                    email: request.email
-                                },
-                                form_data: {
-                                    request_id: requestId,
-                                    category: 'Property',
-                                    property_address: `${request.location}${request.landmark ? ', ' + request.landmark : ''}`,
-                                    property_type: request.property_classification || 'Not specified',
-                                    area: 'Not specified',
-                                    submission_date: request.submission_date || new Date().toISOString().split('T')[0],
-                                    land_reference: request.land_reference_arp,
-                                    contact_person: request.contact_person,
-                                    purpose: request.purpose
-                                }
-                            })
-                        });
-                        
-                        const batchResult = await batchResponse.json();
-                        if (batchResult.success) {
-                            console.log('✅ Property request added to batch tracking');
-                            if (batchResult.trigger_batch) {
-                                console.log(`🎉 Batch threshold reached for ${batchResult.barangay}! Ready for scheduling.`);
-                            }
-                        } else {
-                            console.warn('⚠️ Batch tracking failed:', batchResult.message);
-                        }
-                    }
-                } catch (emailError) {
-                    console.warn('⚠️ Email notification error:', emailError);
-                }
+                // All categories now use batch scheduling - no immediate emails or auto-scheduling
+                // Requests will be held in Inspection Requests module until batch of 5 is reached
+                console.log(`Request accepted for batch scheduling: ${request.inspection_category} inspection in ${request.location}`);
                 
-                // If the request has a requested inspection date and is Machinery/Building, schedule it automatically
-                if (request.requested_inspection_date && 
-                    (request.inspection_category === 'Machinery' || request.inspection_category === 'Building')) {
-                    
-                    console.log(`Auto-scheduling inspection for ${request.inspection_category} on ${request.requested_inspection_date}`);
-                    
-                    try {
-                        const scheduleResponse = await fetch('../backend/api/schedule_inspection.php', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                request_id: requestId,
-                                inspection_date: request.requested_inspection_date,
-                                barangay: request.location,
-                                inspection_category: request.inspection_category
-                            })
-                        });
-                        
-                        const scheduleResult = await scheduleResponse.json();
-                        
-                        if (scheduleResult.success) {
-                            console.log('Inspection scheduled successfully:', scheduleResult);
-                            // Show success modal with scheduling info
-                            showAcceptWithScheduleSuccessModal(requestId, request.location, request.requested_inspection_date, request.inspection_category);
-                        } else {
-                            console.warn('Failed to schedule inspection:', scheduleResult.message);
-                            // Still show regular success modal
-                            showAcceptSuccessModal(requestId, request.location || 'Unknown');
-                        }
-                    } catch (scheduleError) {
-                        console.error('Error scheduling inspection:', scheduleError);
-                        // Still show regular success modal
-                        showAcceptSuccessModal(requestId, request.location || 'Unknown');
-                    }
-                } else {
-                    // Regular acceptance for Property category or requests without dates
-                    showAcceptSuccessModal(requestId, request.location || 'Unknown');
-                }
+                // Show success modal - all requests now go to batch scheduling
+                showAcceptSuccessModal(requestId, request.location || 'Unknown');
                 
                 // Refresh all tables and stats
                 await this.loadIncomingRequestsTable();
@@ -7055,6 +7004,12 @@ class StaffApp {
                 // Send decline email notification
                 await this.sendDeclineNotification(requestData, reason.trim());
                 
+                // Close loading modal
+                const loadingModal = document.getElementById('declineLoadingModal');
+                if (loadingModal) {
+                    loadingModal.remove();
+                }
+                
                 // Close the decline modal
                 closeDeclineRequestModal();
                 
@@ -7066,13 +7021,26 @@ class StaffApp {
                 await this.updateDashboardStats();
                 
             } else {
+                // Close loading modal
+                const loadingModal = document.getElementById('declineLoadingModal');
+                if (loadingModal) {
+                    loadingModal.remove();
+                }
+                
                 // Show professional error notification
                 showDeclineErrorModal(result.error || 'Unknown error');
             }
             
         } catch (error) {
             console.error('Error declining request:', error);
-            alert('Error declining request. Please try again.');
+            
+            // Close loading modal
+            const loadingModal = document.getElementById('declineLoadingModal');
+            if (loadingModal) {
+                loadingModal.remove();
+            }
+            
+            showDeclineErrorModal('Error declining request. Please try again.');
         }
     }
 
@@ -7433,7 +7401,7 @@ class StaffApp {
 
         try {
             // Show loading state
-            tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem;">Loading inspection requests...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem;">Loading inspection requests...</td></tr>';
 
             // Fetch assessment requests from database
             const response = await fetch('../backend/api/get_requests.php');
@@ -7448,11 +7416,11 @@ class StaffApp {
             tableBody.innerHTML = '';
 
             if (!data.success || !data.data) {
-                tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: #dc3545;">Error loading requests.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #dc3545;">Error loading requests.</td></tr>';
                 return;
             }
 
-            // Get only accepted requests for scheduling
+            // Get only accepted requests for scheduling (minimum 5 per barangay)
             const acceptedRequests = data.data.filter(request => request.status === 'accepted');
             
             // Group accepted requests by barangay
@@ -7483,15 +7451,41 @@ class StaffApp {
                 }
             });
 
-            // Sort alphabetically
-            allBarangays.sort();
+            // Sort with priority: barangays with 5+ requests first, then alphabetically
+            allBarangays.sort((a, b) => {
+                const requestsA = barangayGroups[a] || [];
+                const requestsB = barangayGroups[b] || [];
+                const countA = requestsA.length;
+                const countB = requestsB.length;
+                
+                // Priority 1: Barangays with 5+ requests go to top
+                const canScheduleA = countA >= 5;
+                const canScheduleB = countB >= 5;
+                
+                if (canScheduleA && !canScheduleB) return -1; // A goes first
+                if (!canScheduleA && canScheduleB) return 1;  // B goes first
+                
+                // Priority 2: Within same scheduling status, sort by count (descending)
+                if (canScheduleA && canScheduleB) {
+                    if (countA !== countB) return countB - countA; // Higher count first
+                }
+                
+                // Priority 3: Finally sort alphabetically
+                return a.localeCompare(b);
+            });
 
             // Create table rows for each barangay
             allBarangays.forEach(barangayName => {
                 const requestsInBarangay = barangayGroups[barangayName] || [];
-                const pendingCount = requestsInBarangay.length;
-                const canSchedule = pendingCount >= 10;
-                const isReady = pendingCount > 0 && pendingCount < 10;
+                
+                // Count by category
+                const landPropertyCount = requestsInBarangay.filter(req => req.inspection_category === 'Land Property').length;
+                const machineryCount = requestsInBarangay.filter(req => req.inspection_category === 'Machinery').length;
+                const buildingCount = requestsInBarangay.filter(req => req.inspection_category === 'Building').length;
+                const totalCount = requestsInBarangay.length;
+                
+                const canSchedule = totalCount >= 5;
+                const isReady = totalCount > 0 && totalCount < 5;
 
                 const row = document.createElement('tr');
                 
@@ -7502,14 +7496,17 @@ class StaffApp {
 
                 row.innerHTML = `
                     <td><strong>${barangayName}</strong></td>
-                    <td class="centered-col ${canSchedule ? 'highlight-count' : ''} ${isReady ? 'pending-red' : ''}">${pendingCount}</td>
+                    <td class="centered-col">${landPropertyCount}</td>
+                    <td class="centered-col">${machineryCount}</td>
+                    <td class="centered-col">${buildingCount}</td>
+                    <td class="centered-col ${canSchedule ? 'highlight-count' : ''} ${isReady ? 'pending-red' : ''}">${totalCount}</td>
                     <td class="centered-col">
                         <button class="btn ${canSchedule ? 'btn-success schedule-btn' : 'btn-secondary'} btn-sm" 
                                 data-barangay="${barangayName}" 
-                                data-count="${pendingCount}"
+                                data-count="${totalCount}"
                                 ${!canSchedule ? 'disabled' : ''}
-                                onclick="staffApp.openScheduleModal('${barangayName}', ${pendingCount})">
-                            ${canSchedule ? '<i class="fas fa-calendar-check"></i> Schedule Now' : `<i class="fas fa-calendar-plus"></i> Schedule (${pendingCount}/10)`}
+                                onclick="staffApp.openScheduleModal('${barangayName}', ${totalCount})">
+                            ${canSchedule ? '<i class="fas fa-calendar-check"></i> Schedule Now' : `<i class="fas fa-calendar-plus"></i> Schedule (${totalCount}/5)`}
                         </button>
                     </td>
                 `;
@@ -7520,17 +7517,17 @@ class StaffApp {
 
         } catch (error) {
             console.error('Error loading inspection requests:', error);
-            tableBody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: #dc3545;">Error loading requests. Please try again.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: #dc3545;">Error loading requests. Please try again.</td></tr>';
         }
     }
 
     openScheduleModal(barangayName, requestCount) {
         try {
             // Verify the barangay has enough requests to schedule
-            if (requestCount < 10) {
+            if (requestCount < 5) {
                 this.showValidationError(
                     'Insufficient Requests for Batch Scheduling',
-                    `Barangay ${barangayName} has only ${requestCount} request(s). You need at least 10 requests to schedule a batch inspection.`
+                    `Barangay ${barangayName} has only ${requestCount} request(s). You need at least 5 requests to schedule a batch inspection.`
                 );
                 return;
             }
@@ -7697,6 +7694,11 @@ class StaffApp {
                 await this.loadInspectionRequests();
                 this.renderCurrentView();
                 await this.updateDashboardStats();
+                
+                // Refresh batch scheduling calendar to show updated availability
+                if (typeof loadCalendarData === 'function') {
+                    await loadCalendarData();
+                }
 
             } finally {
                 // Restore button state
@@ -9084,42 +9086,29 @@ function showRequestDetailsModal(request) {
                     ${request.inspection_category === 'Land Property' ? `
                     <div><strong>Property Classification:</strong> ${request.property_classification || 'N/A'}</div>
                     ` : ''}
-                    ${(request.inspection_category === 'Machinery' || request.inspection_category === 'Building') && request.requested_inspection_date ? `
-                    <div><strong>Requested Date:</strong> 
-                        <span style="color: #007bff; font-weight: 600;">
-                            ${new Date(request.requested_inspection_date).toLocaleDateString('en-US', {
-                                weekday: 'long',
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            })}
-                        </span>
-                    </div>
-                    ` : ''}
+                    <!-- No requested date section - clients use view-only calendar -->
                     <div><strong>Location:</strong> ${request.location || 'N/A'}</div>
                     <div><strong>Landmark:</strong> ${request.landmark || 'N/A'}</div>
-                    <div><strong>Land Reference:</strong> ${request.land_reference_arp || 'N/A'}</div>
+                    <div><strong>Land Reference:</strong> ${request.land_reference || 'N/A'}</div>
                     <div><strong>Contact Person:</strong> ${request.contact_person || 'N/A'}</div>
                     <div><strong>Contact Number:</strong> ${request.contact_number || 'N/A'}</div>
                     <div><strong>Date Submitted:</strong> ${formattedDate}</div>
                     <div><strong>Valid ID:</strong> ${request.valid_id_name ? `<a href="../backend/api/view_valid_id.php?id=${request.id}" target="_blank" style="color: #007bff; text-decoration: none; font-weight: 500;">View</a>` : 'Not provided'}</div>
                 </div>
                 <div style="margin: 1rem 0;">
-                    <strong>Purpose:</strong>
+                    <strong>Purpose and Preferred Date:</strong>
                     <p style="margin: 0.5rem 0; padding: 1rem; background: #f5f5f5; border-radius: 4px;">${request.purpose || 'N/A'}</p>
                 </div>
-                ${(request.inspection_category === 'Machinery' || request.inspection_category === 'Building') && request.requested_inspection_date ? `
-                <div style="margin: 1rem 0; padding: 1rem; background: #e3f2fd; border-radius: 4px; border-left: 4px solid #2196f3;">
-                    <div style="color: #1976d2; display: flex; align-items: center; margin-bottom: 0.5rem;">
-                        <i class="fas fa-calendar-alt" style="margin-right: 0.5rem;"></i>
-                        <strong>Appointment Request</strong>
+                <div style="margin: 1rem 0; padding: 1rem; background: #e8f5e8; border-radius: 4px; border-left: 4px solid #28a745;">
+                    <div style="color: #155724; display: flex; align-items: center; margin-bottom: 0.5rem;">
+                        <i class="fas fa-info-circle" style="margin-right: 0.5rem;"></i>
+                        <strong>Scheduling Information</strong>
                     </div>
-                    <p style="margin: 0; color: #1565c0;">
-                        This client has selected a preferred inspection date. When you accept this request, 
-                        it will be automatically scheduled to the calendar for the requested date.
+                    <p style="margin: 0; color: #155724;">
+                        Client has viewed the available dates calendar and mentioned preferred dates in the purpose field. 
+                        Schedule inspection based on their preferences and calendar availability.
                     </p>
                 </div>
-                ` : ''}
                 ${request.inspection_category === 'Land Property' ? `
                 <div style="margin: 1rem 0; padding: 1rem; background: #f3e5f5; border-radius: 4px; border-left: 4px solid #9c27b0;">
                     <div style="color: #7b1fa2; display: flex; align-items: center; margin-bottom: 0.5rem;">
@@ -9347,12 +9336,39 @@ function closeConfirmationModal() {
 function proceedWithDecline(requestId, reason) {
     closeConfirmationModal();
     
+    // Show loading modal immediately
+    showDeclineLoadingModal(requestId);
+    
     // Call the staffApp method to process the decline
     if (staffApp) {
         staffApp.processDeclineRequest(requestId, reason);
     } else {
         showDeclineErrorModal('Application not ready. Please refresh the page.');
     }
+}
+
+function showDeclineLoadingModal(requestId) {
+    const modalHtml = `
+        <div id="declineLoadingModal" class="modal" style="display: block; z-index: 10003;">
+            <div class="modal-content" style="max-width: 400px; text-align: center; padding: 2rem;">
+                <div style="color: #dc3545; font-size: 3rem; margin-bottom: 1rem;">
+                    <i class="fas fa-spinner fa-pulse"></i>
+                </div>
+                <h2 style="color: #dc3545; margin-bottom: 1rem;">Processing Decline Request</h2>
+                <p style="color: #6c757d; margin-bottom: 1.5rem; font-size: 1rem;">Declining request #${requestId}...</p>
+                <p style="color: #666; font-size: 0.9rem;">Sending notification...</p>
+            </div>
+        </div>
+        
+        <style>
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        </style>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
 }
 
 function showDeclineSuccessModal(requestId, reason) {
@@ -9503,7 +9519,6 @@ async function showAcceptRequestModal(requestId) {
         }
         
         const request = data.data;
-        const isAppointmentRequest = (request.inspection_category === 'Machinery' || request.inspection_category === 'Building') && request.requested_inspection_date;
         
         const modalHtml = `
             <div id="acceptRequestModal" class="modal" style="display: block;">
@@ -9527,17 +9542,6 @@ async function showAcceptRequestModal(requestId) {
                                 </span>
                             </span>
                             <strong>Location:</strong> <span>${request.location}</span>
-                            ${isAppointmentRequest ? `
-                            <strong>Requested Date:</strong> 
-                            <span style="color: #007bff; font-weight: 600;">
-                                ${new Date(request.requested_inspection_date).toLocaleDateString('en-US', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                })}
-                            </span>
-                            ` : ''}
                         </div>
                     </div>
                     
@@ -9557,7 +9561,7 @@ async function showAcceptRequestModal(requestId) {
                             <i class="fas fa-calendar-alt" style="color: #7b1fa2; margin-right: 0.5rem; margin-top: 0.1rem;"></i>
                             <div style="color: #7b1fa2;">
                                 <strong>Manual Scheduling:</strong> This request will be moved to the View module and grouped 
-                                by barangay for manual scheduling when the barangay reaches 10+ pending requests.
+                                by barangay for manual scheduling when the barangay reaches 5+ pending requests.
                             </div>
                         </div>
                     </div>
@@ -9722,7 +9726,7 @@ function showAcceptSuccessModal(requestId, barangayName) {
                             <ul style="margin: 0.5rem 0 0 0; padding-left: 1rem; text-align: left;">
                                 <li>Request is now available in the <strong>View module</strong></li>
                                 <li>Grouped by barangay in <strong>Inspection Requests</strong></li>
-                                <li>Will be schedulable when ${barangayName} reaches 10+ pending requests</li>
+                                <li>Will be schedulable when ${barangayName} reaches 5+ pending requests</li>
                                 <li>Client will be notified via email</li>
                             </ul>
                         </div>
@@ -10163,8 +10167,9 @@ function showDetailsModal(request) {
                     <div><strong>Date Submitted:</strong> ${request.dateSubmitted}</div>
                 </div>
                 <div style="margin: 1rem 0;">
-                    <strong>Purpose:</strong>
+                    <strong>Purpose and Preferred Date:</strong>
                     <p style="margin: 0.5rem 0; padding: 1rem; background: #f5f5f5; border-radius: 4px;">${request.purpose}</p>
+                    <small style="color: #6c757d; font-style: italic;">Client viewed calendar and mentioned preferred dates above</small>
                 </div>
                 <div class="modal-footer" style="text-align: right; margin-top: 1.5rem;">
                     <button class="btn btn-primary" onclick="scheduleInspection('${request.id}'); closeDetailsModal();">
@@ -10773,7 +10778,15 @@ class InspectionHistoryManager {
                     <tr data-inspection-id="${inspection.id}">
                         <td style="padding: 1rem; border-bottom: 1px solid #eee;">${date}</td>
                         <td style="padding: 1rem; border-bottom: 1px solid #eee;">${sourceIcon}${inspection.property_address}</td>
-                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">${inspection.assessment_type}</td>
+                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
+                            <span style="color: ${
+                                ((inspection.inspection_category || inspection.assessment_type) === 'Land Property' || 
+                                 (inspection.inspection_category || inspection.assessment_type) === 'Property') ? '#6c757d' : 
+                                (inspection.inspection_category || inspection.assessment_type) === 'Machinery' ? '#007bff' : '#28a745'
+                            }; font-weight: 500;">
+                                ${(inspection.inspection_category || inspection.assessment_type) === 'Property' ? 'Land Property' : (inspection.inspection_category || inspection.assessment_type || 'N/A')}
+                            </span>
+                        </td>
                         <td style="padding: 1rem; border-bottom: 1px solid #eee;">
                             <span class="status-badge ${statusClass}" style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;">
                                 <i class="fas ${statusIcon}"></i>
@@ -11275,10 +11288,6 @@ class InspectionHistoryManager {
                                 <div>
                                     <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #666; text-transform: uppercase; margin-bottom: 0.25rem; letter-spacing: 0.5px;">Assessment Type</label>
                                     <p style="margin: 0; font-size: 1rem; color: #1a1a1a; font-weight: 500;">${inspection.assessment_type}</p>
-                                </div>
-                                <div>
-                                    <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #666; text-transform: uppercase; margin-bottom: 0.25rem; letter-spacing: 0.5px;">Requested Date</label>
-                                    <p style="margin: 0; font-size: 1rem; color: #1a1a1a; font-weight: 500;">${date}</p>
                                 </div>
                                 <div>
                                     <label style="display: block; font-size: 0.8rem; font-weight: 600; color: #666; text-transform: uppercase; margin-bottom: 0.25rem; letter-spacing: 0.5px;">Current Status</label>

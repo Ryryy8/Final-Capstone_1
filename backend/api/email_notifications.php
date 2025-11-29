@@ -170,10 +170,10 @@ try {
                 }
             }
 
-            // Validate that we have at least 10 clients
-            if (count($input['clients_data']) < 10) {
+            // Validate that we have at least 5 clients
+            if (count($input['clients_data']) < 5) {
                 http_response_code(400);
-                echo json_encode(['success' => false, 'message' => 'Minimum 10 clients required for batch scheduling']);
+                echo json_encode(['success' => false, 'message' => 'Minimum 5 clients required for batch scheduling']);
                 exit;
             }
 
@@ -186,20 +186,31 @@ try {
                 }
             }
 
-            $successCount = $emailNotification->sendBatchSchedulingNotification(
+            $emailResults = $emailNotification->sendBatchSchedulingNotification(
                 $input['clients_data'],
                 $input['barangay'],
                 $input['schedule_info']
             );
 
-            $totalClients = count($input['clients_data']);
+            // Handle both old and new return formats for backward compatibility
+            if (is_array($emailResults)) {
+                $successCount = $emailResults['emails_sent'];
+                $totalClients = $emailResults['total_clients'];
+                $failedSends = count($emailResults['failed_emails']);
+            } else {
+                // Backward compatibility with old numeric return
+                $successCount = $emailResults;
+                $totalClients = count($input['clients_data']);
+                $failedSends = $totalClients - $successCount;
+            }
+            
             $response = [
                 'success' => $successCount > 0,
                 'message' => "Batch scheduling notifications sent: {$successCount}/{$totalClients}",
                 'barangay' => $input['barangay'],
                 'total_clients' => $totalClients,
                 'successful_sends' => $successCount,
-                'failed_sends' => $totalClients - $successCount
+                'failed_sends' => $failedSends
             ];
             break;
 

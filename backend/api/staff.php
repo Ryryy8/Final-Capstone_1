@@ -322,7 +322,7 @@ function getInspectionHistory() {
                                          AND status IN ('completed', 'accepted', 'approved', 'pending')";
                             $countResult = $db->fetch($countQuery, ['%' . $barangayName . '%']);
                             $dbCount = $countResult['count'] ?? 0;
-                            $clientCount = max($clientCount, $dbCount, 10); // Use highest count, minimum 10
+                            $clientCount = max($clientCount, $dbCount, 5); // Use highest count, minimum 5
                         }
                     } else {
                         // Machinery and Building typically have 1 client each
@@ -517,14 +517,14 @@ function getInspectionDetails($inspectionId) {
         if ($source === 'scheduled_inspection') {
             // Determine category from inspection notes
             $notes = $inspection['notes'] ?? '';
-            $actualCategory = 'Property'; // Default
+            $actualCategory = 'Land Property'; // Default
             
             if (stripos($notes, 'machinery') !== false) {
                 $actualCategory = 'Machinery';
             } elseif (stripos($notes, 'building') !== false) {
                 $actualCategory = 'Building';
-            } elseif (stripos($notes, 'property') !== false) {
-                $actualCategory = 'Property';
+            } elseif (stripos($notes, 'land property') !== false || stripos($notes, 'property') !== false) {
+                $actualCategory = 'Land Property';
             }
             
             // Get appropriate client count based on stored request_count and category
@@ -532,8 +532,8 @@ function getInspectionDetails($inspectionId) {
             $clientCount = 0;
             
             try {
-                if ($actualCategory === 'Property') {
-                    // For Property inspections, use the stored request_count as it's accurate
+                if ($actualCategory === 'Land Property') {
+                    // For Land Property inspections, use the stored request_count as it's accurate
                     $clientCount = $storedRequestCount > 0 ? $storedRequestCount : 10;
                     
                     // Double-check with database if stored count seems low
@@ -542,11 +542,11 @@ function getInspectionDetails($inspectionId) {
                         $countQuery = "SELECT COUNT(*) as count 
                                      FROM assessment_requests 
                                      WHERE location LIKE ? 
-                                     AND inspection_category = 'Property'
+                                     AND inspection_category = 'Land Property'
                                      AND status IN ('completed', 'accepted', 'approved', 'pending')";
                         $countResult = $db->fetch($countQuery, ['%' . $barangayName . '%']);
                         $dbCount = $countResult['count'] ?? 0;
-                        $clientCount = max($clientCount, $dbCount, 10); // Use highest count, minimum 10
+                        $clientCount = max($clientCount, $dbCount, 5); // Use highest count, minimum 5
                     }
                 } else {
                     // Machinery and Building typically have 1 client each
@@ -554,7 +554,7 @@ function getInspectionDetails($inspectionId) {
                     if ($clientCount == 0) $clientCount = 1; // Ensure minimum 1 for Machinery/Building
                 }
             } catch (Exception $e) {
-                if ($actualCategory === 'Property') {
+                if ($actualCategory === 'Land Property') {
                     $clientCount = $storedRequestCount > 0 ? $storedRequestCount : 10;
                 } else {
                     $clientCount = $storedRequestCount > 0 ? min($storedRequestCount, 2) : 1;
@@ -590,21 +590,21 @@ function getInspectionDetails($inspectionId) {
             $clients = [];
             
             try {
-                if ($actualCategory === 'Property' && $clientCount > 1) {
-                    // For Property inspections, fetch actual client records
-                    $clientsQuery = "SELECT id, name, email, location, inspection_category, purpose, 
+                if ($actualCategory === 'Land Property' && $clientCount > 1) {
+                    // For Land Property inspections, fetch actual client records
+                    $clientsQuery = "SELECT id, name, email, location, inspection_category, purpose_and_preferred_date as purpose, 
                                             contact_person, contact_number, property_classification, 
-                                            landmark, status, created_at, requested_inspection_date
+                                            landmark, status, created_at
                                     FROM assessment_requests 
                                     WHERE location LIKE ? 
-                                    AND inspection_category = 'Property'
+                                    AND inspection_category = 'Land Property'
                                     AND status IN ('completed', 'accepted', 'approved', 'pending', 'scheduled')
                                     ORDER BY created_at DESC
                                     LIMIT ?";
                     
                     $clientRecords = $db->fetchAll($clientsQuery, ['%' . $barangayName . '%', $clientCount]);
                     
-                    error_log("Query for Property clients in $barangayName: Found " . count($clientRecords) . " records");
+                    error_log("Query for Land Property clients in $barangayName: Found " . count($clientRecords) . " records");
                     
                     if ($clientRecords && count($clientRecords) > 0) {
                         $clients = array_map(function($client) {
@@ -613,8 +613,8 @@ function getInspectionDetails($inspectionId) {
                                 'name' => $client['name'] ?? 'Unknown Client',
                                 'email' => $client['email'] ?? 'No email provided',
                                 'location' => $client['location'] ?? 'Unknown location',
-                                'assessment_type' => $client['inspection_category'] ?? 'Property',
-                                'purpose' => $client['purpose'] ?? 'Property assessment',
+                                'assessment_type' => $client['inspection_category'] ?? 'Land Property',
+                                'purpose' => $client['purpose'] ?? 'Land Property assessment',
                                 'contact_person' => $client['contact_person'] ?? '',
                                 'contact_number' => $client['contact_number'] ?? '',
                                 'property_classification' => $client['property_classification'] ?? '',
@@ -627,9 +627,9 @@ function getInspectionDetails($inspectionId) {
                     }
                 } elseif (($actualCategory === 'Machinery' || $actualCategory === 'Building') && $clientCount > 0) {
                     // For Machinery and Building inspections, fetch actual client records too
-                    $clientsQuery = "SELECT id, name, email, location, inspection_category, purpose, 
+                    $clientsQuery = "SELECT id, name, email, location, inspection_category, purpose_and_preferred_date as purpose, 
                                             contact_person, contact_number, property_classification, 
-                                            landmark, status, created_at, requested_inspection_date
+                                            landmark, status, created_at
                                     FROM assessment_requests 
                                     WHERE location LIKE ? 
                                     AND inspection_category = ?
@@ -719,7 +719,7 @@ function getInspectionDetails($inspectionId) {
                 'status' => $inspection['status'] ?? 'unknown',
                 'created_at' => $inspection['created_at'],
                 'updated_at' => $inspection['updated_at'] ?? '',
-                'purpose' => $inspection['purpose'] ?? 'No purpose specified',
+                'purpose' => $inspection['purpose_and_preferred_date'] ?? $inspection['purpose'] ?? 'No purpose specified',
                 'notes' => $inspection['decline_reason'] ?? 'No notes available',
                 'property_classification' => $inspection['property_classification'] ?? '',
                 'landmark' => $inspection['landmark'] ?? '',
@@ -1001,7 +1001,7 @@ function recoverInspection($archiveId) {
             if ($sourceTable === 'assessment_requests') {
                 $insertSQL = "INSERT INTO assessment_requests 
                              (name, email, contact_number, location, inspection_category, 
-                              purpose, contact_person, property_classification, landmark, 
+                              purpose_and_preferred_date, contact_person, property_classification, landmark, 
                               land_reference_arp, valid_id_name, requested_inspection_date, 
                               status, decline_reason, created_at, updated_at) 
                              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";

@@ -13,7 +13,7 @@ class EmailNotification {
     public function __construct() {
         $this->mail = new PHPMailer(true);
         $this->fromEmail = 'assesspro2025@gmail.com';
-        $this->fromName = 'Property Assessment Pro';
+        $this->fromName = 'AssessPro - Municipal Property Assessment';
         
         $this->setupSMTP();
     }
@@ -62,7 +62,7 @@ class EmailNotification {
             
             // Content
             $this->mail->isHTML(true);
-            $this->mail->Subject = "Assessment Request Update - #{$requestId}";
+            $this->mail->Subject = "AssessPro - Assessment Request Update #{$requestId}";
             
             // Email template
             $htmlBody = $this->getEmailTemplate($clientName, $requestId, $status, $comments);
@@ -89,7 +89,7 @@ class EmailNotification {
             $this->mail->addAddress($clientEmail, $clientName);
             
             $this->mail->isHTML(true);
-            $this->mail->Subject = "Assessment Request Confirmation - #{$requestId}";
+            $this->mail->Subject = "AssessPro - Request Confirmation #{$requestId}";
             
             $htmlBody = $this->getConfirmationTemplate($clientName, $requestId, $propertyDetails);
             $this->mail->Body = $htmlBody;
@@ -117,7 +117,7 @@ class EmailNotification {
             $this->mail->addAddress($testEmail);
             
             $this->mail->isHTML(true);
-            $this->mail->Subject = "Email Configuration Test";
+            $this->mail->Subject = "AssessPro - Email Configuration Test";
             
             $this->mail->Body = "
             <html>
@@ -125,12 +125,12 @@ class EmailNotification {
                 <h2>Email Test Successful! ✅</h2>
                 <p>This is a test email to verify that your email configuration is working properly.</p>
                 <p><strong>Test Time:</strong> " . date('Y-m-d H:i:s') . "</p>
-                <p>If you received this email, your system is ready to send notifications!</p>
-                <p>Sent from: Property Assessment Pro</p>
+                <p>If you received this email, your AssessPro system is ready to send notifications!</p>
+                <p>Sent from: AssessPro Municipal Property Assessment System</p>
             </body>
             </html>";
             
-            $this->mail->AltBody = "Email Test Successful! This is a test email sent on " . date('Y-m-d H:i:s');
+            $this->mail->AltBody = "AssessPro Email Test Successful! This test email was sent on " . date('Y-m-d H:i:s') . " from AssessPro Municipal Property Assessment System.";
             
             error_log("Attempting to send test email to: $testEmail");
             $this->mail->send();
@@ -172,11 +172,11 @@ class EmailNotification {
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h1>Property Assessment Update</h1>
+                    <h1>AssessPro - Assessment Update</h1>
                 </div>
                 <div class='content'>
-                    <h2>Hello {$clientName},</h2>
-                    <p>We have an update regarding your property assessment request.</p>
+                    <h2>Dear {$clientName},</h2>
+                    <p>We have an important update regarding your municipal property assessment request.</p>
                     
                     <p><strong>Request ID:</strong> #{$requestId}</p>
                     <p><strong>Current Status:</strong> <span class='status-badge'>{$status}</span></p>
@@ -189,10 +189,11 @@ class EmailNotification {
                     <p>If you have any questions, please don't hesitate to contact our office.</p>
                     
                     <p>Best regards,<br>
-                    Property Assessment Office</p>
+                    Municipal Property Assessment Office<br>
+                    AssessPro System</p>
                 </div>
                 <div class='footer'>
-                    <p>This is an automated message from the Property Assessment System.</p>
+                    <p>This is an automated message from AssessPro Municipal Property Assessment System.</p>
                 </div>
             </div>
         </body>
@@ -217,11 +218,11 @@ class EmailNotification {
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h1>Request Confirmation</h1>
+                    <h1>AssessPro - Request Confirmation</h1>
                 </div>
                 <div class='content'>
                     <h2>Thank you, {$clientName}!</h2>
-                    <p>Your property assessment request has been successfully submitted.</p>
+                    <p>Your municipal property assessment request has been successfully submitted and is now under review.</p>
                     
                     <p><strong>Request ID:</strong> #{$requestId}</p>
                     <p><strong>Status:</strong> <span style='color: #f59e0b; font-weight: bold;'>Pending Review</span></p>
@@ -233,13 +234,14 @@ class EmailNotification {
                         <p><strong>Area:</strong> {$propertyDetails['area']} sq.m.</p>
                     </div>
                     
-                    <p>We will review your request and contact you within 3-5 business days.</p>
+                    <p>We will review your request and contact you within 2-3 business days with the next steps.</p>
                     
                     <p>Best regards,<br>
-                    Property Assessment Office</p>
+                    Municipal Property Assessment Office<br>
+                    AssessPro System</p>
                 </div>
                 <div class='footer'>
-                    <p>This is an automated confirmation from the Property Assessment System.</p>
+                    <p>This is an automated confirmation from AssessPro Municipal Property Assessment System.</p>
                 </div>
             </div>
         </body>
@@ -259,15 +261,19 @@ class EmailNotification {
     private function getStatusMessage($status) {
         switch(strtolower($status)) {
             case 'pending':
-                return 'Your request is currently pending review. We will begin processing it shortly.';
-            case 'in progress':
-                return 'Our team is actively working on your property assessment.';
+                return 'Your assessment request is currently under review by our municipal assessment team. We will process it according to our standard procedures.';
+            case 'accepted':
+                return 'Excellent news! Your assessment request has been approved and accepted. We will proceed with scheduling the property inspection.';
+            case 'scheduled':
+                return 'Your property inspection has been successfully scheduled. You will receive detailed scheduling information shortly.';
             case 'completed':
-                return 'Great news! Your property assessment has been completed.';
+                return 'Your property assessment has been successfully completed. The assessment results and documentation are now ready.';
+            case 'declined':
+                return 'After careful review, we are unable to proceed with your assessment request at this time. Please see the additional comments below for details.';
             case 'cancelled':
-                return 'Your assessment request has been cancelled.';
+                return 'Your assessment request has been cancelled as requested.';
             default:
-                return 'Your request status has been updated.';
+                return 'Your request status has been updated in our system.';
         }
     }
     
@@ -296,8 +302,8 @@ class EmailNotification {
         $message .= "Address: {$propertyDetails['address']}\n";
         $message .= "Property Type: {$propertyDetails['type']}\n";
         $message .= "Area: {$propertyDetails['area']} sq.m.\n\n";
-        $message .= "We will review your request within 3-5 business days.\n\n";
-        $message .= "Best regards,\nProperty Assessment Office";
+        $message .= "We will review your request within 2-3 business days.\n\n";
+        $message .= "Sincerely,\nMunicipal Property Assessment Office\nAssessPro Municipal Assessment System";
         
         return $message;
     }
@@ -322,7 +328,7 @@ class EmailNotification {
             $this->mail->addAddress($clientData['email'], $clientData['name']);
             
             $this->mail->isHTML(true);
-            $this->mail->Subject = "Inspection Scheduled - {$formData['category']} #{$formData['request_id']}";
+            $this->mail->Subject = "AssessPro - {$formData['category']} Assessment Scheduled #{$formData['request_id']}";
             
             $htmlBody = $this->getAcceptanceTemplate($clientData, $formData);
             $this->mail->Body = $htmlBody;
@@ -352,7 +358,7 @@ class EmailNotification {
             $this->mail->addAddress($clientData['email'], $clientData['name']);
             
             $this->mail->isHTML(true);
-            $this->mail->Subject = "Request Update - {$formData['category']} #{$formData['request_id']}";
+            $this->mail->Subject = "AssessPro - Assessment Request Update #{$formData['request_id']}";
             
             $htmlBody = $this->getDeclineTemplate($clientData, $formData, $declineReason);
             $this->mail->Body = $htmlBody;
@@ -370,17 +376,34 @@ class EmailNotification {
     }
     
     /**
-     * Send batch scheduling notification for Property inspections (when 10+ requests reached)
+     * Send batch scheduling notification for Property inspections (when 5+ requests reached)
      */
     public function sendBatchSchedulingNotification($clientsData, $barangay, $scheduleInfo) {
         $successCount = 0;
         $failedEmails = [];
         $totalClients = count($clientsData);
+        $sentEmails = []; // Track actually sent emails to prevent duplicates
+        
+        // Analyze batch composition for mixed categories
+        $categoryBreakdown = [];
+        foreach ($clientsData as $client) {
+            $category = $client['inspection_category'] ?? 'Property';
+            $categoryBreakdown[$category] = ($categoryBreakdown[$category] ?? 0) + 1;
+        }
+        
+        // Prepare batch composition info
+        $batchComposition = [
+            'categories' => $categoryBreakdown,
+            'is_mixed' => count($categoryBreakdown) > 1,
+            'total_count' => $totalClients,
+            'composition_text' => $this->getBatchCompositionText($categoryBreakdown, $barangay)
+        ];
         
         // Debug: Log the client data received
         error_log("DEBUG: Starting batch email send to {$totalClients} clients for {$barangay}");
+        error_log("DEBUG: Batch composition: " . json_encode($categoryBreakdown));
         foreach ($clientsData as $i => $client) {
-            error_log("DEBUG: Client " . ($i + 1) . " - Name: " . ($client['name'] ?? 'N/A') . ", Email: " . ($client['email'] ?? 'N/A') . ", Request ID: " . ($client['request_id'] ?? 'N/A'));
+            error_log("DEBUG: Client " . ($i + 1) . " - Name: " . ($client['name'] ?? 'N/A') . ", Email: " . ($client['email'] ?? 'N/A') . ", Category: " . ($client['inspection_category'] ?? 'N/A'));
         }
         
         foreach ($clientsData as $client) {
@@ -392,7 +415,14 @@ class EmailNotification {
                 try {
                     $attempt++;
                     
-                    // Validate email before attempting to send
+                    // Check if already sent to this email in this batch
+                    $emailKey = strtolower(trim($client['email']));
+                    if (in_array($emailKey, $sentEmails)) {
+                        error_log("DUPLICATE PREVENTION: Email already sent to {$emailKey} in this batch, skipping...");
+                        break;
+                    }
+                    
+                    // Validate client data before attempting to send
                     if (empty($client['email']) || !filter_var($client['email'], FILTER_VALIDATE_EMAIL)) {
                         $failedEmails[] = [
                             'email' => $client['email'] ?? 'NULL',
@@ -403,6 +433,12 @@ class EmailNotification {
                         break; // Don't retry invalid emails
                     }
                     
+                    // Validate required client fields
+                    if (empty($client['name'])) {
+                        error_log("WARNING: Missing client name for email " . $client['email'] . ", using default");
+                        $client['name'] = 'Valued Client';
+                    }
+                    
                     $this->mail->SMTPDebug = 0;
                     $this->mail->clearAddresses();
                     $this->mail->clearAttachments();
@@ -411,16 +447,21 @@ class EmailNotification {
                     $this->mail->addAddress($client['email'], $client['name']);
                     
                     $this->mail->isHTML(true);
-                    $this->mail->Subject = "Property Inspection Scheduled - {$barangay} Batch";
                     
-                    $htmlBody = $this->getBatchSchedulingTemplate($client, $barangay, $scheduleInfo, $totalClients);
+                    // Dynamic subject based on batch composition
+                    $subjectType = $batchComposition['is_mixed'] ? 'Property Assessment' : 
+                                  (array_key_first($batchComposition['categories']) . ' Assessment');
+                    $this->mail->Subject = "AssessPro - {$subjectType} Scheduled - {$barangay} Batch";
+                    
+                    $htmlBody = $this->getBatchSchedulingTemplate($client, $barangay, $scheduleInfo, $totalClients, $batchComposition);
                     $this->mail->Body = $htmlBody;
                     
-                    $this->mail->AltBody = $this->getBatchSchedulingPlainText($client, $barangay, $scheduleInfo, $totalClients);
+                    $this->mail->AltBody = $this->getBatchSchedulingPlainText($client, $barangay, $scheduleInfo, $totalClients, $batchComposition);
                     
                     $this->mail->send();
                     $successCount++;
                     $emailSent = true;
+                    $sentEmails[] = $emailKey; // Track this email as sent
                     error_log("✅ BATCH EMAIL SUCCESS: Sent to " . $client['email'] . " (" . $client['name'] . ")" . ($attempt > 1 ? " [Retry {$attempt}]" : ""));
                     
                 } catch (Exception $e) {
@@ -445,9 +486,11 @@ class EmailNotification {
         
         // Detailed completion log
         error_log("=== BATCH EMAIL SUMMARY ===");
-        error_log("Total clients: {$totalClients}");
-        error_log("Successful emails: {$successCount}");
+        error_log("Total clients in batch: {$totalClients}");
+        error_log("Unique emails sent: {$successCount}");
         error_log("Failed emails: " . count($failedEmails));
+        error_log("Actually sent to: " . implode(', ', $sentEmails));
+        error_log("Accuracy: " . ($totalClients > 0 ? round(($successCount / $totalClients) * 100, 2) : 0) . "%");
         
         if (!empty($failedEmails)) {
             error_log("=== FAILED EMAIL DETAILS ===");
@@ -459,7 +502,14 @@ class EmailNotification {
         // Close SMTP connection
         $this->mail->smtpClose();
         
-        return $successCount;
+        // Return comprehensive results
+        return [
+            'emails_sent' => $successCount,
+            'total_clients' => $totalClients,
+            'failed_emails' => $failedEmails,
+            'sent_to' => $sentEmails,
+            'accuracy' => $totalClients > 0 ? round(($successCount / $totalClients) * 100, 2) : 0
+        ];
     }
     
     /**
@@ -497,13 +547,13 @@ class EmailNotification {
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h1>&#128197; Inspection Scheduled!</h1>
-                    <p>Your {$formData['category']} inspection has been scheduled</p>
+                    <h1>&#128197; Assessment Scheduled!</h1>
+                    <p>Your {$formData['category']} assessment has been scheduled</p>
                 </div>
                 
                 <div class='content'>
-                    <h2>Great news, {$clientData['name']}!</h2>
-                    <p>Your {$formData['category']} inspection request has been <strong>accepted and scheduled</strong> on your requested date.</p>
+                    <h2>Dear {$clientData['name']},</h2>
+                    <p>We are pleased to inform you that your {$formData['category']} assessment request has been <strong>accepted and scheduled</strong> for your preferred date.</p>
                     
                     <div class='acceptance-badge'>&#10003; SCHEDULED</div>
                     
@@ -521,11 +571,12 @@ class EmailNotification {
                     </div>
                     
                     <div class='next-steps'>
-                        <h3 style='margin-top: 0; color: #2e7d32;'>&#9654; What Happens Next?</h3>
+                        <h3 style='margin-top: 0; color: #2e7d32;'>&#9654; Next Steps in the Assessment Process</h3>
                         <ul style='margin: 10px 0; padding-left: 25px;'>
-                            <li><strong>&#10003; Inspection Scheduled:</strong> Your {$formData['category']} inspection has been scheduled for your requested date</li>
-                            <li><strong>&#9742; Confirmation Call:</strong> Our team will contact you within 24-48 hours to confirm the exact time and provide final details</li>
-                            <li><strong>&#8962; Site Inspection:</strong> Our certified assessor will visit your property at the scheduled date and time</li>
+                            <li><strong>&#10003; Assessment Scheduled:</strong> Your {$formData['category']} assessment has been officially scheduled for your preferred date</li>
+                            <li><strong>&#9742; Pre-Assessment Contact:</strong> Our assessment team will contact you within 24-48 hours to confirm the exact time and provide preparation instructions</li>
+                            <li><strong>&#8962; On-Site Assessment:</strong> Our certified municipal assessor will conduct the property assessment at the scheduled date and time</li>
+                            <li><strong>&#128196; Assessment Report:</strong> You will receive the completed assessment report within 5-7 business days after the site visit</li>
                         </ul>
                         
                         <div style='background: #d4edda; padding: 15px; border-radius: 6px; margin-top: 15px; border-left: 4px solid #28a745;'>
@@ -536,23 +587,24 @@ class EmailNotification {
                     </div>
                     
                     <div class='contact-info'>
-                        <h4 style='margin-top: 0; color: #856404;'>&#9742; Important Contact Information</h4>
+                        <h4 style='margin-top: 0; color: #856404;'>&#9742; Contact Information</h4>
                         <p style='margin-bottom: 0;'>
-                            <strong>Phone:</strong> (555) 123-4567<br>
+                            <strong>Assessment Office:</strong> Municipal Property Assessment Division<br>
                             <strong>Email:</strong> assesspro2025@gmail.com<br>
-                            <strong>Office Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM
+                            <strong>Office Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM<br>
+                            <strong>Location:</strong> Municipal Hall, Assessment Division
                         </p>
                     </div>
                     
-                    <p>Thank you for choosing Property Assessment Pro. We look forward to serving you!</p>
+                    <p>Thank you for using AssessPro for your municipal property assessment needs. We are committed to providing professional and accurate assessment services.</p>
                     
-                    <p><strong>Best regards,</strong><br>
-                    Property Assessment Office<br>
-                    <em>Professional Property Assessment Services</em></p>
+                    <p><strong>Sincerely,</strong><br>
+                    Municipal Property Assessment Office<br>
+                    <em>AssessPro Municipal Assessment System</em></p>
                 </div>
                 
                 <div class='footer'>
-                    <p>This is an automated notification from the Property Assessment System.</p>
+                    <p>This is an automated notification from AssessPro Municipal Property Assessment System.</p>
                     <p>Request ID: #{$formData['request_id']} | Accepted on {$currentDate}</p>
                     <p>© " . date('Y') . " Property Assessment Pro. All rights reserved.</p>
                 </div>
@@ -564,7 +616,34 @@ class EmailNotification {
     /**
      * Generate batch scheduling email template for Property inspections (matching building/machinery format)
      */
-    private function getBatchSchedulingTemplate($clientData, $barangay, $scheduleInfo, $totalClients) {
+    private function getBatchSchedulingTemplate($clientData, $barangay, $scheduleInfo, $totalClients, $batchComposition = null) {
+        // Ensure required data fields exist with defaults
+        $clientData['request_id'] = $clientData['request_id'] ?? 'BATCH-' . strtoupper($barangay) . '-' . date('Ymd');
+        $clientData['name'] = $clientData['name'] ?? 'Valued Client';
+        $clientData['property_address'] = $clientData['property_address'] ?? $barangay . ' (as per your submitted request)';
+        
+        // Dynamic content based on batch composition
+        $clientCategory = $clientData['inspection_category'] ?? 'Property';
+        $isMultiCategory = $batchComposition && $batchComposition['is_mixed'];
+        
+        if ($isMultiCategory) {
+            $clientData['property_type'] = $clientCategory . ' Assessment (Mixed Batch)';
+            $assessmentType = 'Property Assessment';
+        } else {
+            $clientData['property_type'] = $clientData['property_type'] ?? $clientCategory . ' Assessment';
+            $assessmentType = $clientCategory . ' Assessment';
+        }
+        
+        $clientData['submission_date'] = $clientData['submission_date'] ?? date('F j, Y');
+        
+        // Ensure schedule info exists with defaults
+        $scheduleInfo['inspection_date'] = $scheduleInfo['inspection_date'] ?? 'To be confirmed';
+        $scheduleInfo['time_window'] = $scheduleInfo['time_window'] ?? '8:00 AM - 5:00 PM';
+        $scheduleInfo['duration'] = $scheduleInfo['duration'] ?? '30-45 minutes per property';
+        
+        // Get batch composition text
+        $batchCompositionText = $batchComposition ? $batchComposition['composition_text'] : "{$totalClients} properties in {$barangay}";
+        
         return "
         <!DOCTYPE html>
         <html>
@@ -591,13 +670,13 @@ class EmailNotification {
         <body>
             <div class='container'>
                 <div class='header'>
-                    <h1>&#128197; Inspection Scheduled!</h1>
-                    <p>Your Property Assessment inspection has been scheduled</p>
+                    <h1>&#128197; {$assessmentType} Scheduled!</h1>
+                    <p>Your {$clientCategory} assessment has been scheduled</p>
                 </div>
                 
                 <div class='content'>
-                    <h2>Great news, {$clientData['name']}!</h2>
-                    <p>Your Property Assessment inspection request has been <strong>accepted and scheduled</strong> as part of our efficient batch processing for {$barangay}.</p>
+                    <h2>Dear {$clientData['name']},</h2>
+                    <p>We are pleased to inform you that your <strong>{$clientCategory} assessment request</strong> has been <strong>accepted and scheduled</strong> as part of our efficient batch assessment process for {$barangay}.</p>
                     
                     <div class='acceptance-badge'>&#10003; SCHEDULED</div>
                     
@@ -614,35 +693,35 @@ class EmailNotification {
                         <div class='detail-row'><span class='detail-label'>Inspection Date:</span> <span class='detail-value'>{$scheduleInfo['inspection_date']}</span></div>
                         <div class='detail-row'><span class='detail-label'>Time Window:</span> <span class='detail-value'>{$scheduleInfo['time_window']}</span></div>
                         <div class='detail-row'><span class='detail-label'>Estimated Duration:</span> <span class='detail-value'>{$scheduleInfo['duration']}</span></div>
-                        <div class='detail-row'><span class='detail-label'>Batch Size:</span> <span class='detail-value'>{$totalClients} properties in {$barangay}</span></div>
+                        <div class='detail-row'><span class='detail-label'>Batch Size:</span> <span class='detail-value'>{$batchCompositionText}</span></div>
                     </div>
                     
                     <div class='next-steps'>
-                        <h3 style='margin-top: 0; color: #2e7d32;'>📋 What's Next?</h3>
-                        <p><strong>1. Prepare for Inspection:</strong> Ensure property is accessible and documents are ready</p>
-                        <p><strong>2. Be Available:</strong> Someone should be present during the scheduled time window</p>
-                        <p><strong>3. Contact Information:</strong> Keep your phone available for any updates from our team</p>
-                        <p><strong>4. Post-Inspection:</strong> Results will be processed and sent to you within 5-7 business days</p>
+                        <h3 style='margin-top: 0; color: #2e7d32;'>📋 Assessment Preparation Steps</h3>
+                        <p><strong>1. Property Preparation:</strong> Ensure the property is accessible and all relevant documents are available for review</p>
+                        <p><strong>2. Availability:</strong> A property owner or authorized representative must be present during the scheduled assessment time</p>
+                        <p><strong>3. Communication:</strong> Keep your contact information current and phone available for coordination with our assessment team</p>
                     </div>
                     
                     <div class='contact-info'>
-                        <h4 style='margin-top: 0; color: #856404;'>📞 Need Help or Have Questions?</h4>
+                        <h4 style='margin-top: 0; color: #856404;'>📞 Assessment Office Contact</h4>
                         <p style='margin-bottom: 0;'>
-                            <strong>Phone:</strong> (555) 123-4567<br>
+                            <strong>Department:</strong> Municipal Assessor<br>
                             <strong>Email:</strong> assesspro2025@gmail.com<br>
-                            <strong>Office Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM
+                            <strong>Office Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM<br>
+                            <strong>Location:</strong> Municipal Hall, Mabini, Batangas
                         </p>
                     </div>
                     
-                    <p>This batch scheduling approach allows us to efficiently serve multiple properties in {$barangay} while maintaining the highest standards of property assessment.</p>
+                    <p>Our batch assessment approach allows us to efficiently serve multiple properties in {$barangay} while maintaining the highest standards of municipal property assessment and ensuring fair and accurate evaluations.</p>
                     
-                    <p><strong>Best regards,</strong><br>
-                    Property Assessment Office<br>
-                    <em>Professional Property Assessment Services</em></p>
+                    <p><strong>Sincerely,</strong><br>
+                    Municipal Property Assessment Office<br>
+                    <em>AssessPro Municipal Assessment System</em></p>
                 </div>
                 
                 <div class='footer'>
-                    <p>This is an automated notification from the Property Assessment System.</p>
+                    <p>This is an automated notification from AssessPro Municipal Property Assessment System.</p>
                     <p>Request ID: #{$clientData['request_id']} | Batch: {$barangay} ({$totalClients} properties) | Scheduled on {$scheduleInfo['inspection_date']}</p>
                     <p>© " . date('Y') . " Property Assessment Pro. All rights reserved.</p>
                 </div>
@@ -660,9 +739,9 @@ class EmailNotification {
             ? date('F j, Y', strtotime($formData['requested_inspection_date'])) 
             : $currentDate;
         
-        return "INSPECTION SCHEDULED\n\n" .
-               "Hello {$clientData['name']},\n\n" .
-               "Great news! Your {$formData['category']} inspection request has been ACCEPTED and SCHEDULED on your requested date.\n\n" .
+        return "ASSESSMENT SCHEDULED - ASSESSPRO\n\n" .
+               "Dear {$clientData['name']},\n\n" .
+               "We are pleased to inform you that your {$formData['category']} assessment request has been ACCEPTED and SCHEDULED for your preferred date.\n\n" .
                "YOUR REQUEST DETAILS:\n" .
                "Request ID: #{$formData['request_id']}\n" .
                "Inspection Category: {$formData['category']}\n" .
@@ -673,21 +752,52 @@ class EmailNotification {
                "Purpose: {$formData['purpose']}\n" .
                "Submitted: {$formData['submission_date']}\n" .
                "Scheduled: {$scheduledDate}\n\n" .
-               "WHAT HAPPENS NEXT:\n" .
-               "1. Inspection Scheduled: Your inspection has been scheduled for your requested date\n" .
-               "2. Confirmation Call: Our team will contact you within 24-48 hours with final details\n" .
-               "3. Site Inspection: Our certified assessor will visit at the scheduled time\n\n" .
+               "NEXT STEPS IN THE ASSESSMENT PROCESS:\n" .
+               "1. Assessment Scheduled: Your assessment has been officially scheduled for your preferred date\n" .
+               "2. Pre-Assessment Contact: Our team will contact you within 24-48 hours with final details\n" .
+               "3. On-Site Assessment: Our certified municipal assessor will conduct the property assessment\n" .
+               "4. Assessment Report: You will receive the completed report within 5-7 business days\n\n" .
                "IMPORTANT: Please ensure someone is available at the scheduled time.\n\n" .
-               "Contact: (555) 123-4567 | assesspro2025@gmail.com\n" .
-               "Office Hours: Monday - Friday, 8:00 AM - 5:00 PM\n\n" .
-               "Best regards,\n" .
-               "Property Assessment Office";
+               "Contact: Municipal Property Assessment Division | assesspro2025@gmail.com\n" .
+               "Office Hours: Monday - Friday, 8:00 AM - 5:00 PM\n" .
+               "Location: Municipal Hall, Assessment Division\n\n" .
+               "Sincerely,\n" .
+               "Municipal Property Assessment Office\n" .
+               "AssessPro Municipal Assessment System";
     }
     
-    private function getBatchSchedulingPlainText($clientData, $barangay, $scheduleInfo, $totalClients) {
-        return "INSPECTION SCHEDULED\n\n" .
-               "Hello {$clientData['name']},\n\n" .
-               "Great news! Your Property Assessment inspection request has been ACCEPTED and SCHEDULED as part of our efficient batch processing for {$barangay}.\n\n" .
+    private function getBatchSchedulingPlainText($clientData, $barangay, $scheduleInfo, $totalClients, $batchComposition = null) {
+        // Ensure required data fields exist with defaults
+        $clientData['request_id'] = $clientData['request_id'] ?? 'BATCH-' . strtoupper($barangay) . '-' . date('Ymd');
+        $clientData['name'] = $clientData['name'] ?? 'Valued Client';
+        $clientData['property_address'] = $clientData['property_address'] ?? $barangay . ' (as per your submitted request)';
+        
+        // Dynamic content based on batch composition
+        $clientCategory = $clientData['inspection_category'] ?? 'Property';
+        $isMultiCategory = $batchComposition && $batchComposition['is_mixed'];
+        
+        if ($isMultiCategory) {
+            $clientData['property_type'] = $clientCategory . ' Assessment (Mixed Batch)';
+            $assessmentType = 'PROPERTY ASSESSMENT';
+        } else {
+            $clientData['property_type'] = $clientData['property_type'] ?? $clientCategory . ' Assessment';
+            $assessmentType = strtoupper($clientCategory) . ' ASSESSMENT';
+        }
+        
+        $clientData['submission_date'] = $clientData['submission_date'] ?? date('F j, Y');
+        $clientData['area'] = $clientData['area'] ?? 'As specified in application';
+        
+        // Ensure schedule info exists with defaults
+        $scheduleInfo['inspection_date'] = $scheduleInfo['inspection_date'] ?? 'To be confirmed';
+        $scheduleInfo['time_window'] = $scheduleInfo['time_window'] ?? '8:00 AM - 5:00 PM';
+        $scheduleInfo['duration'] = $scheduleInfo['duration'] ?? '30-45 minutes per property';
+        
+        // Get batch composition text
+        $batchCompositionText = $batchComposition ? $batchComposition['composition_text'] : "{$totalClients} properties in {$barangay}";
+        
+        return "{$assessmentType} SCHEDULED - ASSESSPRO\n\n" .
+               "Dear {$clientData['name']},\n\n" .
+               "We are pleased to inform you that your {$clientCategory} assessment request has been ACCEPTED and SCHEDULED as part of our efficient batch assessment process for {$barangay}.\n\n" .
                "YOUR REQUEST DETAILS:\n" .
                "Request ID: #{$clientData['request_id']}\n" .
                "Property Location: {$clientData['property_address']}\n" .
@@ -698,14 +808,14 @@ class EmailNotification {
                "Inspection Date: {$scheduleInfo['inspection_date']}\n" .
                "Time Window: {$scheduleInfo['time_window']}\n" .
                "Estimated Duration: {$scheduleInfo['duration']}\n" .
-               "Batch Size: {$totalClients} properties in {$barangay}\n\n" .
+               "Batch Size: {$batchCompositionText}\n\n" .
                "WHAT'S NEXT:\n" .
                "1. Prepare for Inspection: Ensure property is accessible and documents are ready\n" .
                "2. Be Available: Someone should be present during the scheduled time window\n" .
                "3. Contact Information: Keep your phone available for any updates from our team\n" .
                "4. Post-Inspection: Results will be processed and sent to you within 5-7 business days\n\n" .
                "NEED HELP OR HAVE QUESTIONS?\n" .
-               "Phone: (555) 123-4567\n" .
+               "Phone: 09989595966\n" .
                "Email: assesspro2025@gmail.com\n" .
                "Office Hours: Monday - Friday, 8:00 AM - 5:00 PM\n\n" .
                "Best regards,\n" .
@@ -782,7 +892,7 @@ class EmailNotification {
                     <div class='contact-info'>
                         <h4 style='margin-top: 0; color: #721c24;'>&#9742; Need Help? Contact Us</h4>
                         <p style='margin-bottom: 0;'>
-                            <strong>Phone:</strong> (555) 123-4567<br>
+                            <strong>Phone:</strong> 09989595966<br>
                             <strong>Email:</strong> assesspro2025@gmail.com<br>
                             <strong>Office Hours:</strong> Monday - Friday, 8:00 AM - 5:00 PM
                         </p>
@@ -847,6 +957,26 @@ class EmailNotification {
         } catch (Exception $e) {
             error_log("Connection test failed: " . $e->getMessage());
             return false;
+        }
+    }
+    
+    /**
+     * Generate human-readable batch composition text
+     */
+    private function getBatchCompositionText($categoryBreakdown, $barangay) {
+        if (count($categoryBreakdown) === 1) {
+            // Single category batch
+            $category = array_key_first($categoryBreakdown);
+            $count = $categoryBreakdown[$category];
+            return "{$count} {$category} " . ($count > 1 ? 'assessments' : 'assessment') . " in {$barangay}";
+        } else {
+            // Mixed category batch
+            $parts = [];
+            foreach ($categoryBreakdown as $category => $count) {
+                $parts[] = "{$count} {$category}";
+            }
+            $total = array_sum($categoryBreakdown);
+            return implode(', ', $parts) . " (Total: {$total} assessments in {$barangay})";
         }
     }
 }

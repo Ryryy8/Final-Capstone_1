@@ -41,12 +41,12 @@ body {
     --accent-green: #95d5a3;
     --dark-green: #1e4a2a;
     --very-light-green: #f0f8f2;
-    --hero-bg: url('images/BG final.jpg');
+    --hero-bg: url('images/bgfinal1.jpg');
     --white: #ffffff;
     --gray-100: #f8f9fa;
     --gray-300: #e9ecef;
     --gray-500: #6c757d;
-    --gray-700: #495057;
+    --gray-700: #495057; 
     --gray-900: #212529;
 }
 
@@ -1783,7 +1783,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     border-radius: 4px;
     font-weight: 500;
     font-size: 0.85rem;
-    cursor: pointer;
+    cursor: default; /* View-only calendar */
     transition: all 0.2s ease;
     border: 1px solid transparent;
     position: relative;
@@ -1799,12 +1799,13 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     background: #d4edda;
     color: #155724;
     border-color: #c3e6cb;
+    cursor: default;
 }
 
 .calendar-day.available:hover {
     background: #28a745;
     color: white;
-    transform: scale(1.05);
+    transform: scale(1.02);
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
 }
 
@@ -1825,7 +1826,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     background: #f8d7da;
     color: #721c24;
     border-color: #f5c6cb;
-    cursor: not-allowed;
+    cursor: default;
 }
 
 .calendar-day.past {
@@ -1855,14 +1856,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 }
 
 .calendar-day.booked::after {
-    content: '';
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    width: 6px;
-    height: 6px;
-    background: #dc3545;
-    border-radius: 50%;
+    display: none;
 }
 
 .calendar-day.has-inspections {
@@ -2105,7 +2099,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
                     <option value="Industrial">Industrial</option>
                 </select>
 
-                <label for="requestedDate" id="requestedDateLabel" style="display: none;">Preferred Inspection Date</label>
+                <label for="requestedDate" id="requestedDateLabel" style="display: none;">Assessor's Calendar - View Available Dates</label>
                 <div id="calendarContainer" style="display: none;">
                     <div class="calendar-widget">
                         <div class="calendar-header">
@@ -2133,12 +2127,12 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
                         </div>
                         <div class="calendar-footer">
                             <div id="selectedDateDisplay" class="selected-date-display">
-                                No date selected
+                                Calendar shows available dates for reference only
                             </div>
                         </div>
                     </div>
                 </div>
-                <input type="hidden" id="requestedDate" name="requestedDate">
+                <!-- Calendar is view-only, no date input needed -->
 
                 <label for="location">Location</label>
                 <select id="location" name="location" required>
@@ -2197,8 +2191,8 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
                        title="Please enter exactly 11 digits"
                        oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 11)">
 
-                <label for="purpose">Purpose</label>
-                <textarea id="purpose" name="purpose" rows="4" required placeholder="Describe your purpose..."></textarea>
+                <label for="purpose">Purpose and Preferred Date</label>
+                <textarea id="purpose" name="purpose" rows="4" required placeholder="Describe your purpose and mention your preferred date..."></textarea>
 
                 <label for="validId">Attach Valid ID</label>
                 <input type="file" id="validId" name="validId" accept="image/*,.pdf" required>
@@ -2600,7 +2594,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
                         <img src="images/logo.png" alt="AssessPro Logo" class="logo-img" />
                         <span>AssessPro</span>
                     </div>
-                    <p>Professional scheduling solutions for assessment experts.</p>
+                    <p>Professional Scheduling Solutions For Assessment Experts.</p>
                 </div>
                 
                 <div class="footer-section">
@@ -2621,11 +2615,21 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
                 </div>
                 
                 <div class="footer-section">
+                    <h4>Municipal Assessor</h4>
+                    <ul>    
+                        <li style="text-align: center;">
+                            Mr. Rodel H. Ortega<br>
+                            <small style="color: #888; margin-left: 13px; display: block;">Department Head</small>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
                     <h4>Contact</h4>
                     <ul>
-                        <li><i class="fas fa-envelope"></i> <a href="mailto:hello@assesspro.com">hello@assesspro.com</a></li>
-                        <li><i class="fas fa-phone"></i> <a href="tel:+15551234567">+1 (555) 123-4567</a></li>
-                        <li><i class="fas fa-map-marker-alt"></i>Mabini, Batangas</li>
+                        <li style="display: flex; align-items: center;"><i class="fas fa-envelope"></i> assesspro2025@gmail.com</li>
+                        <li style="display: flex; align-items: center;"><i class="fas fa-phone"></i> 09989595966</li>
+                        <li style="display: flex; align-items: center;"><i class="fas fa-map-marker-alt"></i> Mabini, Batangas</li>
                     </ul>
                 </div>
             </div>
@@ -3011,13 +3015,13 @@ const inspectionCategorySelect = document.getElementById('inspectionCategory');
 const propertyClassLabel = document.getElementById('propertyClassLabel');
 const propertyClassSelect = document.getElementById('propertyClass');
 const requestedDateLabel = document.getElementById('requestedDateLabel');
-const requestedDateInput = document.getElementById('requestedDate');
 const calendarContainer = document.getElementById('calendarContainer');
+// No requestedDateInput needed since calendar is view-only
 
-// Calendar variables
+// Calendar variables (view-only calendar)
 let currentCalendarMonth = new Date().getMonth() + 1;
 let currentCalendarYear = new Date().getFullYear();
-let selectedDate = null;
+// No selectedDate needed since calendar is view-only
 let calendarData = null;
 
 // Calendar functions
@@ -3114,10 +3118,8 @@ async function renderCalendar(data) {
             dayElement.classList.add('has-inspections');
         }
         
-        // Add click handler for available days (even with some inspections, as long as not fully booked)
-        if (dayData.isSelectable && !isBlocked) {
-            dayElement.addEventListener('click', () => selectDate(dayData.date, dayElement));
-        }
+        // Calendar is view-only - no click handlers for date selection
+        // Clients can view available dates but cannot select specific dates
         
         // Add tooltips
         let tooltipText = '';
@@ -3126,10 +3128,12 @@ async function renderCalendar(data) {
             const blockInfo = window.dateBlockingValidator ? window.dateBlockingValidator.getBlockedDateInfo(dayData.date) : null;
             tooltipText = blockInfo ? `Unavailable - ${blockInfo.reason}` : 'Unavailable';
         } else if (dayData.status === 'booked') {
-            tooltipText = 'Fully booked';
+            const barangayCount = dayData.uniqueBarangays || 0;
+            tooltipText = `Unavailable - ${barangayCount} different barangays scheduled`;
         } else if (dayData.hasScheduledInspections && dayData.status === 'available') {
-            const count = dayData.machineryBuildingCount || 0;
-            tooltipText = `Available (${count} Machinery/Building requests scheduled)`;
+            const count = dayData.totalInspections || 0;
+            const barangays = dayData.uniqueBarangays || 0;
+            tooltipText = `Available (${count} inspections from ${barangays} barangay${barangays !== 1 ? 's' : ''})`;
         } else if (dayData.status === 'weekend') {
             tooltipText = 'Weekend';
         } else if (dayData.status === 'holiday') {
@@ -3148,51 +3152,11 @@ async function renderCalendar(data) {
     });
 }
 
-async function selectDate(date, element) {
-    // Check if date is blocked before allowing selection
-    if (window.dateBlockingValidator) {
-        const validation = await window.dateBlockingValidator.validateDateSelection(date);
-        if (!validation.valid) {
-            // Show error message
-            window.dateBlockingValidator.showValidationMessage(validation.message, true);
-            return; // Don't allow selection
-        } else {
-            // Clear any existing error messages
-            window.dateBlockingValidator.clearValidationMessage();
-        }
-    }
-    
-    // Remove previous selection
-    document.querySelectorAll('.calendar-day.selected').forEach(el => {
-        el.classList.remove('selected');
-    });
-    
-    // Add selection to clicked element
-    element.classList.add('selected');
-    selectedDate = date;
-    
-    // Update hidden input
-    requestedDateInput.value = date;
-    
-    updateSelectedDateDisplay();
-}
-
+// Calendar is view-only - no date selection functions needed
 function updateSelectedDateDisplay() {
     const display = document.getElementById('selectedDateDisplay');
-    
-    if (selectedDate) {
-        const date = new Date(selectedDate);
-        const formattedDate = date.toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
-        display.textContent = `Selected: ${formattedDate}`;
-        display.style.background = 'var(--accent-green)';
-        display.style.color = 'var(--dark-green)';
-    } else {
-        display.textContent = 'No date selected';
+    if (display) {
+        display.textContent = 'Calendar shows available dates for reference only';
         display.style.background = 'var(--very-light-green)';
         display.style.color = 'var(--primary-green)';
     }
@@ -3262,17 +3226,20 @@ async function initializeCalendar() {
 
 inspectionCategorySelect.addEventListener('change', function() {
     if (this.value === 'Land Property') {
-        // Show property classification, hide calendar
+        // Show property classification AND calendar
         propertyClassLabel.style.display = 'block';
         propertyClassSelect.style.display = 'block';
         propertyClassSelect.required = true;
         
-        requestedDateLabel.style.display = 'none';
-        calendarContainer.style.display = 'none';
-        requestedDateInput.required = false;
-        requestedDateInput.value = '';
-        selectedDate = null;
-        updateSelectedDateDisplay();
+        // Show calendar for Land Property (view-only)
+        requestedDateLabel.style.display = 'block';
+        calendarContainer.style.display = 'block';
+        // No date input required since calendar is view-only
+        
+        // Initialize calendar if not already done
+        if (!calendarData) {
+            initializeCalendar();
+        }
     } else if (this.value === 'Machinery' || this.value === 'Building') {
         // Hide property classification, show calendar
         propertyClassLabel.style.display = 'none';
@@ -3280,16 +3247,17 @@ inspectionCategorySelect.addEventListener('change', function() {
         propertyClassSelect.required = false;
         propertyClassSelect.value = '';
         
+        // Show calendar for Machinery and Building (view-only)
         requestedDateLabel.style.display = 'block';
         calendarContainer.style.display = 'block';
-        requestedDateInput.required = true;
+        // No date input required since calendar is view-only
         
         // Initialize calendar if not already done
         if (!calendarData) {
             initializeCalendar();
         }
     } else {
-        // Hide both when no category selected
+        // Hide all when no category selected
         propertyClassLabel.style.display = 'none';
         propertyClassSelect.style.display = 'none';
         propertyClassSelect.required = false;
@@ -3297,10 +3265,7 @@ inspectionCategorySelect.addEventListener('change', function() {
         
         requestedDateLabel.style.display = 'none';
         calendarContainer.style.display = 'none';
-        requestedDateInput.required = false;
-        requestedDateInput.value = '';
-        selectedDate = null;
-        updateSelectedDateDisplay();
+        // No date input to manage since calendar is view-only
     }
 });
 
