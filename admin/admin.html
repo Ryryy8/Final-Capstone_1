@@ -1896,6 +1896,41 @@ td {
     }
 }
    </style>
+
+    <script>
+    // Utility to get initials from a name string
+    function getInitials(name) {
+        if (!name) return '';
+        const words = name.trim().split(/\s+/).filter(Boolean);
+        if (words.length === 1) {
+            return words[0][0].toUpperCase();
+        }
+        return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+    }
+
+    // Set initials in the avatar
+    function setUserAvatarInitials(userName) {
+        const avatar = document.querySelector('.user-avatar');
+        if (avatar) {
+            avatar.textContent = getInitials(userName);
+        }
+    }
+
+    // Observe changes to the .user-name element and update avatar
+    document.addEventListener('DOMContentLoaded', function() {
+        const userNameElem = document.querySelector('.user-name');
+        if (!userNameElem) return;
+
+        // Initial set
+        setUserAvatarInitials(userNameElem.textContent.trim());
+
+        // Watch for changes
+        const observer = new MutationObserver(function() {
+            setUserAvatarInitials(userNameElem.textContent.trim());
+        });
+        observer.observe(userNameElem, { childList: true, characterData: true, subtree: true });
+    });
+    </script>
 </head>
 <body>
     <div class="admin-layout">
