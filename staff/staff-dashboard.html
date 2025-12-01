@@ -2164,6 +2164,25 @@ body {
     transform: translateY(-1px);
 }
 
+.btn-reschedule {
+    background-color: var(--warning-orange, #ff9800);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-reschedule:hover {
+    background-color: #f57c00;
+    transform: translateY(-1px);
+}
+
 .completed-badge {
     background: #10b981;
     color: white;
@@ -4861,6 +4880,7 @@ body {
                                         <th>Request ID</th>
                                         <th>Client Name</th>
                                         <th>Client Email</th>
+                                        <th>Contact Number</th>
                                         <th>Category</th>
                                         <th>Location/Barangay</th>
                                         <th>Landmark</th>
@@ -6029,6 +6049,11 @@ class StaffApp {
             this.blockedDates = await this.loadBlockedDates();
             this.renderCurrentView();
             
+            // Also refresh reschedule calendar if it's open
+            if (typeof refreshRescheduleCalendar === 'function') {
+                refreshRescheduleCalendar();
+            }
+            
         } catch (error) {
             console.error('Error blocking date:', error);
             this.showErrorNotification('Error Blocking Date', error.message);
@@ -6771,7 +6796,7 @@ class StaffApp {
 
         try {
             // Show loading state
-            tableBody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 2rem;">Loading requests...</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 2rem;">Loading requests...</td></tr>';
 
             // Fetch assessment requests from database
             const response = await fetch('../backend/api/get_requests.php');
@@ -6786,7 +6811,7 @@ class StaffApp {
             tableBody.innerHTML = '';
 
             if (!data.success || !data.data || data.data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 2rem; color: #666;">No requests found.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 2rem; color: #666;">No requests found.</td></tr>';
                 return;
             }
 
@@ -6794,7 +6819,7 @@ class StaffApp {
             const acceptedRequests = data.data.filter(request => request.status === 'accepted');
             
             if (acceptedRequests.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 2rem; color: #666;">No accepted requests found.</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 2rem; color: #666;">No accepted requests found.</td></tr>';
                 return;
             }
 
@@ -6808,6 +6833,7 @@ class StaffApp {
                     <td>#${request.id}</td>
                     <td>${request.name || 'N/A'}</td>
                     <td>${request.email || 'N/A'}</td>
+                    <td>${request.contact_number || 'N/A'}</td>
                     <td><span class="category-badge ${(request.inspection_category || '').toLowerCase().replace(' ', '-')}">${request.inspection_category || 'N/A'}</span></td>
                     <td>${request.location || 'N/A'}</td>
                     <td>${request.landmark || 'N/A'}</td>
@@ -6825,7 +6851,7 @@ class StaffApp {
 
         } catch (error) {
             console.error('Error loading view requests:', error);
-            tableBody.innerHTML = '<tr><td colspan="12" style="text-align: center; padding: 2rem; color: #dc3545;">Error loading requests. Please try again.</td></tr>';
+            tableBody.innerHTML = '<tr><td colspan="13" style="text-align: center; padding: 2rem; color: #dc3545;">Error loading requests. Please try again.</td></tr>';
         }
     }
 
@@ -7517,26 +7543,19 @@ class StaffApp {
                 }
             });
 
-            // Sort with priority: barangays with 5+ requests first, then alphabetically
+            // Sort hierarchy: highest to lowest number of requests, then alphabetically
             allBarangays.sort((a, b) => {
                 const requestsA = barangayGroups[a] || [];
                 const requestsB = barangayGroups[b] || [];
                 const countA = requestsA.length;
                 const countB = requestsB.length;
                 
-                // Priority 1: Barangays with 5+ requests go to top
-                const canScheduleA = countA >= 5;
-                const canScheduleB = countB >= 5;
-                
-                if (canScheduleA && !canScheduleB) return -1; // A goes first
-                if (!canScheduleA && canScheduleB) return 1;  // B goes first
-                
-                // Priority 2: Within same scheduling status, sort by count (descending)
-                if (canScheduleA && canScheduleB) {
-                    if (countA !== countB) return countB - countA; // Higher count first
+                // Priority 1: Sort by request count (descending - highest to lowest)
+                if (countA !== countB) {
+                    return countB - countA; // Higher count first
                 }
                 
-                // Priority 3: Finally sort alphabetically
+                // Priority 2: If same count, sort alphabetically
                 return a.localeCompare(b);
             });
 
@@ -8933,7 +8952,12 @@ class StaffApp {
                     
                     ${inspection.note ? `<div style="font-size: 0.75em; color: var(--text-light); margin-bottom: 0.4rem;">${inspection.note}</div>` : ''}
                     
-                    <div style="text-align: right;">
+                    <div style="text-align: right; display: flex; gap: 0.5rem; justify-content: flex-end;">
+                        <button onclick="openRescheduleModal(${inspection.id}, '${inspection.barangay}', '${inspection.date}', ''); document.getElementById('inspectionModal').style.display = 'none';" 
+                                style="background: var(--warning-orange, #ff9800); color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 3px; font-size: 0.75em; cursor: pointer; transition: background 0.2s;"
+                                onmouseover="this.style.background='#f57c00'" onmouseout="this.style.background='var(--warning-orange, #ff9800)'">
+                            <i class="fas fa-calendar-alt"></i> Reschedule
+                        </button>
                         <button onclick="staffApp.completeInspection(${inspection.id}, '${inspection.barangay}'); document.getElementById('inspectionModal').style.display = 'none';" 
                                 style="background: var(--primary-green); color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 3px; font-size: 0.75em; cursor: pointer; transition: background 0.2s;"
                                 onmouseover="this.style.background='var(--dark-green)'" onmouseout="this.style.background='var(--primary-green)'">
@@ -10198,6 +10222,666 @@ function closeCompleteErrorModal() {
     const modal = document.getElementById('completeErrorModal');
     if (modal) {
         modal.remove();
+    }
+}
+
+// Reschedule Modal Functions
+// Global variable for current reschedule inspection - ensure it's properly declared
+window.currentRescheduleInspection = null;
+
+function openRescheduleModal(inspectionId, barangay, currentDate, currentTime) {
+    // Set the global variable with inspection data
+    window.currentRescheduleInspection = { 
+        id: inspectionId, 
+        barangay: barangay,
+        currentDate: currentDate
+    };
+    
+    console.log('Setting currentRescheduleInspection to:', window.currentRescheduleInspection);
+    
+    const modalHtml = `
+        <div id="rescheduleModal" class="modal" style="display: block;">
+            <div class="modal-content" style="max-width: 500px;">
+                <span class="close" onclick="closeRescheduleModal()">&times;</span>
+                <h2 style="margin-bottom: 1rem; color: var(--primary-blue);">📅 Reschedule Inspection</h2>
+                
+                <div style="margin-bottom: 1rem; padding: 1rem; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;">
+                    <p style="margin: 0; color: #856404;"><strong>Current Schedule:</strong></p>
+                    <p style="margin: 0.5rem 0 0 0; color: #856404;" id="currentScheduleInfo">${barangay} - ${formatDate(currentDate)}</p>
+                </div>
+                
+                <form id="rescheduleForm">
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">New Date:</label>
+                        
+                        <!-- Date Picker Button -->
+                        <button type="button" id="reschedulePickerBtn" 
+                                style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; background: white; transition: border-color 0.2s; box-sizing: border-box; font-family: inherit; text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center;"
+                                onfocus="this.style.borderColor='#2d8659'" 
+                                onblur="this.style.borderColor='#ddd'">
+                            <span id="reschedulePickerText" style="color: #999;">Click to select date...</span>
+                            <span style="color: #666;">📅</span>
+                        </button>
+                        
+                        <!-- Calendar Widget (Initially Hidden) -->
+                        <div id="rescheduleCalendarWidget" class="calendar-responsive" style="display: none; border: 1px solid #d1d5db; border-radius: 6px; background: white; overflow: hidden; margin-top: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); position: relative; z-index: 10; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;">
+                            
+                            <!-- Calendar Header -->
+                            <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); padding: 12px 16px; display: flex; justify-content: space-between; align-items: center;">
+                                <button type="button" id="reschedulePrevMonth" style="background: rgba(255,255,255,0.15); border: none; color: white; cursor: pointer; font-size: 16px; padding: 6px 8px; border-radius: 4px; transition: all 0.2s; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">‹</button>
+                                <span id="rescheduleCurrentMonth" style="font-weight: 600; font-size: 14px; color: white; flex: 1; text-align: center; letter-spacing: 0.5px;"></span>
+                                <button type="button" id="rescheduleNextMonth" style="background: rgba(255,255,255,0.15); border: none; color: white; cursor: pointer; font-size: 16px; padding: 6px 8px; border-radius: 4px; transition: all 0.2s; font-weight: 600;" onmouseover="this.style.background='rgba(255,255,255,0.25)'" onmouseout="this.style.background='rgba(255,255,255,0.15)'">›</button>
+                            </div>
+                            
+                            <!-- Days of Week Header -->
+                            <div style="display: grid; grid-template-columns: repeat(7, 1fr); background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                                <div style="padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: 0.025em;">S</div>
+                                <div style="padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: 0.025em;">M</div>
+                                <div style="padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: 0.025em;">T</div>
+                                <div style="padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: 0.025em;">W</div>
+                                <div style="padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: 0.025em;">T</div>
+                                <div style="padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: 0.025em;">F</div>
+                                <div style="padding: 8px 4px; text-align: center; font-size: 11px; font-weight: 600; color: #6b7280; letter-spacing: 0.025em;">S</div>
+                            </div>
+                            
+                            <!-- Calendar Days Container -->
+                            <div id="rescheduleCalendarDays" style="display: grid; grid-template-columns: repeat(7, 1fr); background: white; max-height: 280px; overflow-y: auto;">
+                                <!-- Calendar days will be populated by JavaScript -->
+                            </div>
+                            
+            <!-- Selected date display -->
+            <div id="rescheduleSelectedDisplay" style="font-size: 10px; color: #666; margin-top: 4px; padding: 4px 6px; background: #f8f9fa; border-radius: 3px; text-align: center;">
+                Select an available date for rescheduling
+            </div>
+            
+            <!-- Calendar Legend -->
+            <div style="margin-top: 12px; padding: 8px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                <div style="font-size: 10px; font-weight: 600; color: #374151; margin-bottom: 6px; text-align: center;">Calendar Legend</div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 12px; height: 12px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 3px;"></div>
+                        <span style="font-size: 8px; color: #374151;">Available</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 12px; height: 12px; background: #f8d7da; border: 1px solid #f5c6cb; border-radius: 3px;"></div>
+                        <span style="font-size: 8px; color: #374151;">Unavailable</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 12px; height: 12px; background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 3px;"></div>
+                        <span style="font-size: 8px; color: #374151;">Holiday/Blocked</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div style="width: 12px; height: 12px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 3px;"></div>
+                        <span style="font-size: 8px; color: #374151;">Past/Weekend</span>
+                    </div>
+                </div>
+            </div>
+        </div>                        <input type="hidden" id="newInspectionDate" required>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Reason for Rescheduling:</label>
+                        <textarea id="rescheduleReason" rows="3" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; resize: vertical;" placeholder="Please provide a reason for rescheduling..."></textarea>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
+                        <button type="button" onclick="closeRescheduleModal()" 
+                                style="background: #6c757d; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                                style="background: var(--warning-orange, #ff9800); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-calendar-alt"></i> Reschedule & Notify
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('rescheduleModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // Initialize reschedule calendar and store reference
+    window.rescheduleCalendar = initializeRescheduleCalendar();
+    
+    // Add form submit handler
+    document.getElementById('rescheduleForm').addEventListener('submit', handleRescheduleSubmit);
+}
+
+function closeRescheduleModal() {
+    const modal = document.getElementById('rescheduleModal');
+    if (modal) {
+        modal.remove();
+    }
+    // Don't reset currentRescheduleInspection here - keep it until form is submitted
+}
+
+function showRescheduleSuccessModal(newDate, newTime, barangay, emailSent, emailStats) {
+    let emailStatus = '';
+    
+    if (emailStats && emailStats.total_owners > 0) {
+        if (emailStats.emails_sent_count > 0) {
+            emailStatus = `📧 ${emailStats.emails_sent_count} of ${emailStats.total_owners} property owner(s) notified`;
+            if (emailStats.emails_failed_count > 0) {
+                emailStatus += ` (${emailStats.emails_failed_count} failed)`;
+            }
+        } else {
+            emailStatus = '💡 Property owners should be notified manually';
+        }
+    } else if (emailSent) {
+        emailStatus = '📧 Email notification sent to property owner';
+    } else {
+        emailStatus = '💡 Property owner should be notified manually';
+    }
+    
+    const modalHtml = `
+        <div id="rescheduleSuccessModal" class="modal" style="display: block;">
+            <div class="modal-content" style="max-width: 450px; text-align: center;">
+                <div style="padding: 1.5rem;">
+                    <div style="color: var(--success-green, #28a745); font-size: 3rem; margin-bottom: 1rem;">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h2 style="color: var(--success-green, #28a745); margin-bottom: 1rem;">Inspection Rescheduled!</h2>
+                    <p style="color: var(--text-dark); margin-bottom: 1.5rem; line-height: 1.5;">The inspection has been successfully rescheduled${emailStats && emailStats.emails_sent_count > 0 ? ' and email notifications have been sent' : ''}.</p>
+                    <div style="background: #f8f9fa; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem; text-align: left;">
+                        <strong>New Schedule:</strong><br>
+                        📍 ${barangay}<br>
+                        📅 ${formatDate(newDate)}<br>
+                        ${emailStatus}
+                    </div>
+                    <button class="btn btn-primary" onclick="closeRescheduleSuccessModal()" style="min-width: 120px;">
+                        <i class="fas fa-check"></i> OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    const existingModal = document.getElementById('rescheduleSuccessModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+}
+
+function closeRescheduleSuccessModal() {
+    const modal = document.getElementById('rescheduleSuccessModal');
+    if (modal) {
+        modal.remove();
+    }
+    // Refresh the calendar to show updated schedule
+    if (typeof loadInspectionCalendar === 'function') {
+        loadInspectionCalendar();
+    }
+}
+
+// Helper functions
+function convertTo12Hour(time24) {
+    const [hours, minutes] = time24.split(':');
+    const hour12 = ((parseInt(hours) + 11) % 12) + 1;
+    const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+    return `${hour12}:${minutes} ${ampm}`;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+}
+
+// Initialize reschedule calendar
+function initializeRescheduleCalendar() {
+    let currentDate = new Date();
+    let selectedDate = null;
+    let availabilityData = {};
+    
+    // Set to next month initially to show future dates
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    
+    // Fetch availability data AND blocked dates for reschedule calendar
+    async function fetchAvailabilityData() {
+        try {
+            const month = currentDate.getMonth() + 1; // JS months are 0-based
+            const year = currentDate.getFullYear();
+            console.log('Fetching batch calendar availability + blocked dates for reschedule:', month, year);
+
+            // Fetch both batch availability and blocked dates
+            const [batchResponse, blockedResponse] = await Promise.all([
+                fetch(`../backend/get_batch_calendar_availability.php?month=${month}&year=${year}`),
+                fetch(`../backend/blocked_dates.php?action=list`)
+            ]);
+
+            const batchData = await batchResponse.json();
+            const blockedData = await blockedResponse.json();
+
+            console.log('Batch availability response:', batchData);
+            console.log('Blocked dates response:', blockedData);
+
+            // Clear previous data
+            availabilityData = {};
+
+            // First, process batch availability data
+            if (batchData.success && Array.isArray(batchData.availability)) {
+                batchData.availability.forEach(dayData => {
+                    availabilityData[dayData.date] = {
+                        status: dayData.status,
+                        count: dayData.totalInspections || 0,
+                        isSelectable: dayData.status === 'available',
+                        holidayName: dayData.holidayName || null,
+                        reason: dayData.reason || null,
+                        hasBatchScheduled: dayData.hasBatchScheduled || false,
+                        hasReachedLimit: dayData.hasReachedLimit || false,
+                        individualCount: dayData.individualCount || 0,
+                        barangays: dayData.barangays || null
+                    };
+                });
+            }
+
+            // Then, override with blocked dates (blocked dates take priority)
+            if (blockedData.success && Array.isArray(blockedData.data)) {
+                blockedData.data.forEach(blockedDate => {
+                    const dateStr = blockedDate.date;
+                    if (dateStr) {
+                        availabilityData[dateStr] = {
+                            status: 'blocked',
+                            count: 0,
+                            isSelectable: false,
+                            reason: blockedDate.reason || 'Date blocked by staff',
+                            blockedBy: blockedDate.created_by || 'Staff',
+                            holidayName: null
+                        };
+                    }
+                });
+            }
+            
+            console.log('Final merged availability data for reschedule:', availabilityData);
+            renderCalendar();
+        } catch (error) {
+            console.error('Error fetching reschedule availability data:', error);
+            availabilityData = {};
+            renderCalendar(); // Render without availability data
+        }
+    }
+    
+    function renderCalendar() {
+        const year = currentDate.getFullYear();
+        const month = currentDate.getMonth();
+        
+        // Update month display - exact same as batch calendar
+        const monthNames = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"];
+        document.getElementById('rescheduleCurrentMonth').textContent = `${monthNames[month]} ${year}`;
+        
+        // Clear calendar days
+        const calendarDays = document.getElementById('rescheduleCalendarDays');
+        calendarDays.innerHTML = '';
+        
+        // Calendar logic exact copy from batch inspection calendar
+        const firstDay = new Date(year, month, 1).getDay();
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        
+        const today = new Date();
+        const todayStr = today.getFullYear() + '-' + 
+                        String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                        String(today.getDate()).padStart(2, '0');
+        
+        console.log('Rendering reschedule calendar - today:', todayStr);
+        console.log('Availability data for reschedule:', availabilityData);
+        
+        // Add empty cells for days before month starts
+        for (let i = 0; i < firstDay; i++) {
+            const emptyDay = document.createElement('div');
+            emptyDay.style.cssText = 'padding: 10px; min-height: 40px;';
+            calendarDays.appendChild(emptyDay);
+        }
+        
+        // Add days of the month - using exact batch calendar logic
+        for (let day = 1; day <= daysInMonth; day++) {
+            const dateStr = year + '-' + 
+                           String(month + 1).padStart(2, '0') + '-' + 
+                           String(day).padStart(2, '0');
+            
+            const dayData = availabilityData[dateStr];
+            const isToday = dateStr === todayStr;
+            
+            // Check if selected for reschedule
+            const isSelected = selectedDate && 
+                selectedDate.getDate() === day && 
+                selectedDate.getMonth() === month && 
+                selectedDate.getFullYear() === year;
+            
+            const dayCell = createDayCell(day, dateStr, dayData, isToday, isSelected);
+            calendarDays.appendChild(dayCell);
+        }
+        
+        console.log('Reschedule calendar rendered for', monthNames[month], year);
+    }
+    
+    // Create day cell - exact same logic as batch inspection calendar
+    function createDayCell(day, dateStr, dayData, isToday, isSelected) {
+        const dayElement = document.createElement('div');
+        
+        // Determine day of week for tooltip
+        const dayDate = new Date(dateStr + 'T00:00:00');
+        const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const dayName = dayNames[dayDate.getDay()];
+        
+        let className = '';
+        let title = '';
+        let clickable = false;
+        
+        // Status determination - blocked dates have highest priority
+        if (dayData) {
+            switch(dayData.status) {
+                case 'blocked':
+                    className = 'blocked';
+                    title = `${dayName} - Blocked: ${dayData.reason || 'Date blocked by staff'}`;
+                    clickable = false;
+                    break;
+                    
+                case 'available':
+                    className = 'available';
+                    if (dayData.count > 0) {
+                        title = `${dayName} - Available (${dayData.count} inspection${dayData.count > 1 ? 's' : ''} scheduled)`;
+                    } else {
+                        title = `${dayName} - Available for scheduling`;
+                    }
+                    clickable = true;
+                    break;
+                    
+                case 'unavailable':
+                    className = 'unavailable';
+                    if (dayData.reason) {
+                        title = `${dayName} - Unavailable: ${dayData.reason}`;
+                    } else {
+                        title = `${dayName} - Unavailable for scheduling`;
+                    }
+                    clickable = false;
+                    break;
+                    
+                case 'holiday':
+                    className = 'holiday';
+                    title = `${dayName} - Holiday: ${dayData.holidayName || 'Public Holiday'}`;
+                    clickable = false;
+                    break;
+                    
+                case 'weekend':
+                case 'past':
+                default:
+                    className = 'past';
+                    title = `${dayName} - Not available`;
+                    clickable = false;
+                    break;
+            }
+        } else {
+            // No data - treat as unavailable
+            className = 'past';
+            title = `${dayName} - Not available`;
+            clickable = false;
+        }
+        
+        // Apply selection styling
+        if (isSelected) {
+            className += ' selected';
+            title = `${dayName} - Selected for rescheduling`;
+        }
+        
+        if (isToday) {
+            className += ' today';
+        }
+        
+        dayElement.textContent = day;
+        dayElement.title = title;
+        dayElement.className = className;
+        dayElement.style.cssText = `
+            padding: 10px;
+            text-align: center;
+            cursor: ${clickable ? 'pointer' : 'not-allowed'};
+            border-radius: 4px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: ${isSelected ? '600' : 'normal'};
+            transition: all 0.2s;
+        `;
+        
+        // Apply colors based on status - blocked dates same color as holidays
+        switch(className.split(' ')[0]) {
+            case 'available':
+                dayElement.style.backgroundColor = isSelected ? '#ff9800' : '#d4edda';
+                dayElement.style.color = isSelected ? 'white' : '#155724';
+                dayElement.style.border = `1px solid ${isSelected ? '#ff9800' : '#c3e6cb'}`;
+                break;
+            case 'blocked':
+                dayElement.style.backgroundColor = '#fff3cd';
+                dayElement.style.color = '#856404';
+                dayElement.style.border = '1px solid #ffeaa7';
+                break;
+            case 'unavailable':
+                dayElement.style.backgroundColor = '#f8d7da';
+                dayElement.style.color = '#721c24';
+                dayElement.style.border = '1px solid #f5c6cb';
+                break;
+            case 'holiday':
+                dayElement.style.backgroundColor = '#fff3cd';
+                dayElement.style.color = '#856404';
+                dayElement.style.border = '1px solid #ffeaa7';
+                break;
+            default:
+                dayElement.style.backgroundColor = '#f8f9fa';
+                dayElement.style.color = '#6c757d';
+                dayElement.style.border = '1px solid #dee2e6';
+                break;
+        }
+        
+        // Add click handler for available days
+        if (clickable) {
+            dayElement.addEventListener('click', function() {
+                // Set selected date
+                selectedDate = new Date(dateStr + 'T00:00:00');
+                
+                // Update form input
+                document.getElementById('newInspectionDate').value = dateStr;
+                
+                // Update display
+                const formattedDate = selectedDate.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                document.getElementById('reschedulePickerText').textContent = formattedDate;
+                document.getElementById('reschedulePickerText').style.color = '#333';
+                document.getElementById('rescheduleSelectedDisplay').textContent = `Selected: ${formattedDate}`;
+                
+                // Hide calendar
+                document.getElementById('rescheduleCalendarWidget').style.display = 'none';
+                
+                // Re-render to show selection
+                renderCalendar();
+            });
+            
+            // Add hover effects
+            dayElement.addEventListener('mouseenter', function() {
+                if (!isSelected) {
+                    this.style.backgroundColor = '#fff3e0';
+                    this.style.borderColor = '#ff9800';
+                }
+            });
+            
+            dayElement.addEventListener('mouseleave', function() {
+                if (!isSelected) {
+                    this.style.backgroundColor = '#d4edda';
+                    this.style.borderColor = '#c3e6cb';
+                }
+            });
+        }
+        
+        return dayElement;
+    }
+    
+    // Event listeners for calendar navigation
+    document.getElementById('reschedulePrevMonth').addEventListener('click', function() {
+        // Clear selection when changing months
+        selectedDate = null;
+        document.getElementById('newInspectionDate').value = '';
+        document.getElementById('reschedulePickerText').textContent = 'Click to select date...';
+        document.getElementById('reschedulePickerText').style.color = '#999';
+        document.getElementById('rescheduleSelectedDisplay').textContent = 'Select an available date for rescheduling';
+        
+        // Navigate to previous month
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        // Clear old data and fetch new data for the new month
+        availabilityData = {};
+        fetchAvailabilityData();
+    });
+    
+    document.getElementById('rescheduleNextMonth').addEventListener('click', function() {
+        // Clear selection when changing months
+        selectedDate = null;
+        document.getElementById('newInspectionDate').value = '';
+        document.getElementById('reschedulePickerText').textContent = 'Click to select date...';
+        document.getElementById('reschedulePickerText').style.color = '#999';
+        document.getElementById('rescheduleSelectedDisplay').textContent = 'Select an available date for rescheduling';
+        
+        // Navigate to next month
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        // Clear old data and fetch new data for the new month
+        availabilityData = {};
+        fetchAvailabilityData();
+    });
+    
+    // Toggle calendar visibility
+    document.getElementById('reschedulePickerBtn').addEventListener('click', function() {
+        const calendar = document.getElementById('rescheduleCalendarWidget');
+        calendar.style.display = calendar.style.display === 'none' ? 'block' : 'none';
+    });
+    
+    // Hide calendar when clicking outside
+    document.addEventListener('click', function(event) {
+        const calendar = document.getElementById('rescheduleCalendarWidget');
+        const picker = document.getElementById('reschedulePickerBtn');
+        
+        if (calendar && picker && !calendar.contains(event.target) && !picker.contains(event.target)) {
+            calendar.style.display = 'none';
+        }
+    });
+    
+    // Initial load - fetch availability data and render
+    fetchAvailabilityData();
+    
+    // Return refresh function for external use
+    return {
+        refresh: fetchAvailabilityData,
+        refreshMonth: function() {
+            availabilityData = {};
+            fetchAvailabilityData();
+        }
+    };
+}
+
+// Global function to refresh reschedule calendar when blocked dates change
+function refreshRescheduleCalendar() {
+    if (window.rescheduleCalendar && typeof window.rescheduleCalendar.refresh === 'function') {
+        window.rescheduleCalendar.refresh();
+    }
+}
+
+// Handle reschedule form submission
+async function handleRescheduleSubmit(e) {
+    e.preventDefault();
+    
+    // Check if reschedule data is available
+    if (!window.currentRescheduleInspection) {
+        alert('Error: Reschedule data not found. Please close the modal and try again.');
+        console.error('currentRescheduleInspection is null');
+        return;
+    }
+    
+    console.log('Current reschedule inspection:', window.currentRescheduleInspection);
+    
+    const newDate = document.getElementById('newInspectionDate').value;
+    const reason = document.getElementById('rescheduleReason').value;
+    
+    if (!newDate || !reason.trim()) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+    
+    const newTime = '09:00'; // Default time
+    
+    // Disable submit button to prevent double submission
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Rescheduling...';
+    
+    try {
+        const response = await fetch('../backend/reschedule_inspection.php?v=' + Date.now(), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Cache-Control': 'no-cache'
+            },
+            body: JSON.stringify({
+                inspection_id: window.currentRescheduleInspection.id,
+                new_date: newDate,
+                reason: reason,
+                barangay: window.currentRescheduleInspection.barangay
+            })
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
+        
+        const responseText = await response.text();
+        console.log('Raw response:', responseText);
+        
+        let result;
+        try {
+            result = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('JSON parse error:', parseError);
+            console.error('Response was:', responseText);
+            throw new Error('Server returned invalid JSON. Check console for details.');
+        }
+        
+        console.log('Reschedule response:', result);
+        
+        if (result.success) {
+            closeRescheduleModal();
+            const emailStats = {
+                emails_sent_count: result.emails_sent_count || 0,
+                emails_failed_count: result.emails_failed_count || 0,
+                total_owners: result.total_owners || 0
+            };
+            showRescheduleSuccessModal(newDate, null, window.currentRescheduleInspection.barangay, result.email_sent, emailStats);
+            // Reset the variable after successful reschedule
+            window.currentRescheduleInspection = null;
+        } else {
+            console.error('Reschedule failed:', result);
+            alert('Error rescheduling inspection: ' + (result.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Reschedule error:', error);
+        alert('Error rescheduling inspection: ' + error.message);
+    } finally {
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
     }
 }
 

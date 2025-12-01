@@ -1079,13 +1079,10 @@ class EmailNotification {
                     <div class='next-steps'>
                         <h3>What happens next?</h3>
                         <p><strong>1. Scheduling Process:</strong> Your request is now in the scheduling queue. Our staff will coordinate with you to arrange the inspection date.</p>
-                        <p><strong>2. Notification:</strong> You will receive another email notification once your inspection has been scheduled with specific date and time details.</p>
+                        <p><strong>2. Notification:</strong> You will receive another email notification once your inspection has been scheduled with specific date.</p>
                         <p><strong>3. Preparation:</strong> Please ensure the property is accessible and any required documents are ready for the assessment.</p>
                     </div>
                     
-                    <div class='highlight-box'>
-                        <p><strong>Important:</strong> Keep this email for your records. You will be contacted within 3-5 business days with your scheduled inspection details.</p>
-                    </div>
                     
                     <div class='contact-info'>
                         <p><strong>Questions or concerns?</strong><br>
