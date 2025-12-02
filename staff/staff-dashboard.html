@@ -5676,7 +5676,7 @@ class StaffAnnouncementManager {
                 </div>
                 
                 <div class="announcement-content">
-                    <p class="announcement-message">${announcement.message}</p>
+                    <p class="announcement-message">${this.formatAnnouncementText(announcement.message)}</p>
                 </div>
                 
                 <div class="announcement-footer">
@@ -5688,6 +5688,14 @@ class StaffAnnouncementManager {
                 </div>
             </div>
         `;
+    }
+
+    formatAnnouncementText(text) {
+        return text
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // **bold**
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')              // *italic*
+            .replace(/\n/g, '<br>')                            // Line breaks
+            .replace(/• /g, '<br>• ');                         // Bullet points
     }
 
     getFilteredAnnouncements() {

@@ -34,29 +34,14 @@ function getUserId() {
         session_start();
     }
     
-    // Get the referer to determine user type
-    $referer = $_SERVER['HTTP_REFERER'] ?? '';
-    
-    // Force correct user ID based on referer (most reliable method)
-    if (strpos($referer, '/admin/') !== false || strpos($referer, 'admin.html') !== false) {
-        // Force admin session
-        $_SESSION['user_id'] = 'admin_user';
-        $_SESSION['user_role'] = 'admin';
-        return 'admin_user';
-    } elseif (strpos($referer, '/staff/') !== false || strpos($referer, 'staff-dashboard.html') !== false) {
-        // Force staff session  
-        $_SESSION['user_id'] = 'staff_user';
-        $_SESSION['user_role'] = 'staff';
-        return 'staff_user';
-    }
-    
-    // Check existing session as fallback
+    // Return the actual user ID from session
+    // This ensures each user has their own independent read status
     if (isset($_SESSION['user_id'])) {
         return $_SESSION['user_id'];
     }
     
     // Default fallback
-    return 'unknown_user';
+    return null;
 }
 
 $method = $_SERVER['REQUEST_METHOD'];
@@ -359,35 +344,41 @@ function getAnnouncementStats($pdo) {
 
 function getAdminAnnouncements($pdo) {
     try {
+        // Get the current user ID to check read status
+        $userId = getUserId();
+        
         $stmt = $pdo->prepare("
             SELECT 
-                id,
-                subject,
-                message,
-                priority,
-                category,
-                expiry_date,
-                target_all,
-                target_staff,
-                target_admins,
-                author_id,
-                author_name,
-                is_active,
-                view_count,
-                created_at,
-                updated_at
-            FROM announcements 
-            WHERE is_active = 1 
-            AND (target_all = 1 OR target_admins = 1)
+                a.id,
+                a.subject,
+                a.message,
+                a.priority,
+                a.category,
+                a.expiry_date,
+                a.target_all,
+                a.target_staff,
+                a.target_admins,
+                a.author_id,
+                a.author_name,
+                a.is_active,
+                a.view_count,
+                a.created_at,
+                a.updated_at,
+                CASE WHEN ar.id IS NOT NULL THEN 1 ELSE 0 END as is_read,
+                ar.read_at
+            FROM announcements a
+            LEFT JOIN announcement_reads ar ON a.id = ar.announcement_id AND ar.user_id = ?
+            WHERE a.is_active = 1 
+            AND (a.target_all = 1 OR a.target_admins = 1)
             ORDER BY 
-                CASE priority 
+                CASE a.priority 
                     WHEN 'urgent' THEN 1 
                     WHEN 'high' THEN 2 
                     WHEN 'normal' THEN 3 
                 END, 
-                created_at DESC
+                a.created_at DESC
         ");
-        $stmt->execute();
+        $stmt->execute([$userId]);
         $announcements = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
         // Format the data for frontend compatibility
@@ -409,6 +400,8 @@ function getAdminAnnouncements($pdo) {
                 'authorName' => $announcement['author_name'],
                 'isActive' => (bool)$announcement['is_active'],
                 'viewCount' => (int)$announcement['view_count'],
+                'isRead' => (bool)$announcement['is_read'],
+                'readAt' => $announcement['read_at'],
                 'createdAt' => $announcement['created_at'],
                 'updatedAt' => $announcement['updated_at']
             ];

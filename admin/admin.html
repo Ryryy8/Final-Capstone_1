@@ -4278,13 +4278,19 @@ class AdminAnnouncementManager {
 
     async markAnnouncementAsRead(id) {
         try {
-            await fetch(this.apiUrl + '?path=mark-read/' + id);
-            // Update local data
-            const announcement = this.announcements.find(a => a.id === id);
-            if (announcement) {
-                announcement.viewCount = (announcement.viewCount || 0) + 1;
+            const response = await fetch(this.apiUrl + '?path=mark-read/' + id);
+            const result = await response.json();
+            
+            if (result.success) {
+                // Update local data
+                const announcement = this.announcements.find(a => a.id === id);
+                if (announcement) {
+                    announcement.isRead = true;
+                    announcement.readAt = new Date().toISOString();
+                }
+                this.updateStats();
+                this.updateBadge();
             }
-            this.updateStats();
         } catch (error) {
             console.error('Error marking announcement as read:', error);
         }
@@ -4302,8 +4308,8 @@ class AdminAnnouncementManager {
     }
 
     isRead(announcement) {
-        // Simple logic: consider read if viewCount > 0
-        return (announcement.viewCount || 0) > 0;
+        // Check if the announcement has been read by this specific admin user
+        return announcement.isRead === true || announcement.isRead === 1;
     }
 
     filterAndRender() {
@@ -4367,8 +4373,6 @@ class AdminAnnouncementManager {
             year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
         });
 
-        const targetBadge = this.getTargetBadge(announcement.targetRecipients);
-
         element.innerHTML = `
             <div class="announcement-header">
                 <div class="announcement-title-row">
@@ -4376,7 +4380,6 @@ class AdminAnnouncementManager {
                     <div class="announcement-badges">
                         <span class="priority-badge ${announcement.priority}">${announcement.priority}</span>
                         <span class="category-badge">${announcement.category}</span>
-                        ${targetBadge}
                     </div>
                 </div>
             </div>
@@ -4388,10 +4391,7 @@ class AdminAnnouncementManager {
                     <i class="fas fa-user"></i>
                     By ${this.escapeHtml(announcement.authorName)} on ${date}
                 </small>
-                <small>
-                    <i class="fas fa-eye"></i>
-                    ${announcement.viewCount || 0} views
-                </small>
+                ${isRead ? '<i class="fas fa-check-circle" style="color: #10b981;"></i>' : ''}
             </div>
         `;
 

@@ -3414,10 +3414,6 @@ You can also use **bold text** or *italic text* for emphasis."
                                 <span class="stat-label">This Month</span>
                                 <span class="stat-value" id="monthlyAnnouncements">0</span>
                             </div>
-                            <div class="stat-item urgent">
-                                <span class="stat-label">Urgent</span>
-                                <span class="stat-value" id="urgentAnnouncements">0</span>
-                            </div>
                         </div>
                         <div id="announcementsList" class="announcements-timeline">
                             <!-- Announcements will be dynamically added here -->
@@ -6184,6 +6180,7 @@ class HeadApp {
                     ${date}
                     ${announcement.viewCount ? `| <i class="fas fa-eye"></i> ${announcement.viewCount} views` : ''}
                 </small>
+                ${announcement.id !== 'preview' ? `
                 <div class="announcement-actions">
                     <button class="action-btn" onclick="headApp.editAnnouncement('${announcement.id}')" title="Edit">
                         <i class="fas fa-edit"></i>
@@ -6195,6 +6192,7 @@ class HeadApp {
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
+                ` : ''}
             </div>
         `;
         
@@ -6373,19 +6371,12 @@ class HeadApp {
             return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
         }).length;
         
-        const urgentCount = announcements.filter(a => 
-            (a.priority === 'urgent' || a.priority === 'high') && 
-            (!a.expiry || new Date(a.expiry) >= new Date())
-        ).length;
-        
         // Update stats display
         const totalEl = document.getElementById('totalAnnouncements');
         const monthlyEl = document.getElementById('monthlyAnnouncements');
-        const urgentEl = document.getElementById('urgentAnnouncements');
         
         if (totalEl) totalEl.textContent = totalCount;
         if (monthlyEl) monthlyEl.textContent = monthlyCount;
-        if (urgentEl) urgentEl.textContent = urgentCount;
     }
 
     filterAnnouncements(announcements) {
