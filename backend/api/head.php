@@ -21,18 +21,20 @@ class HeadAnalytics {
     public function getAnalytics($period = 12, $periodType = 'month') {
         try {
             // Calculate date range based on period type
-            $endDate = date('Y-m-d 23:59:59'); // Include full day
+            $endDate = date('Y-m-d 23:59:59'); // Include full day (today)
             
             switch ($periodType) {
                 case 'week':
-                    $startDate = date('Y-m-d 00:00:00', strtotime('-7 days'));
+                    // Last 7 days including today
+                    $startDate = date('Y-m-d 00:00:00', strtotime('-6 days'));
                     break;
                 case 'month':
-                    // Use exactly 30 days for consistent month comparison
-                    $startDate = date('Y-m-d 00:00:00', strtotime('-30 days'));
+                    // Last 30 days including today
+                    $startDate = date('Y-m-d 00:00:00', strtotime('-29 days'));
                     break;
                 case 'year':
-                    $startDate = date('Y-m-d 00:00:00', strtotime('-365 days'));
+                    // Last 365 days including today
+                    $startDate = date('Y-m-d 00:00:00', strtotime('-364 days'));
                     break;
                 default:
                     $startDate = date('Y-m-d 00:00:00', strtotime("-{$period} months"));
