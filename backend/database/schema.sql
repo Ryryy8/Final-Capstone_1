@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
     role ENUM('admin', 'staff', 'head') NOT NULL DEFAULT 'staff',
     first_name VARCHAR(50) NOT NULL,
     last_name VARCHAR(50) NOT NULL,
-    phone VARCHAR(20) DEFAULT NULL,
+    phone VARCHAR(15) DEFAULT NULL,
     status ENUM('active', 'inactive', 'suspended') DEFAULT 'active',
     last_login TIMESTAMP NULL DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -62,34 +62,24 @@ CREATE TABLE IF NOT EXISTS assessment_requests (
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) NOT NULL,
     inspection_category VARCHAR(100) NOT NULL COMMENT 'Building, Machinery, or Land Property',
-    requested_inspection_date DATE DEFAULT NULL COMMENT 'System assigned date (clients view calendar only)',
-    property_classification VARCHAR(50) DEFAULT NULL COMMENT 'Required only for Land Property category',
-    location TEXT NOT NULL,
-    landmark VARCHAR(255) DEFAULT NULL,
-    land_reference_arp VARCHAR(100) DEFAULT NULL,
+    property_classification ENUM('Residential', 'Commercial', 'Agricultural', 'Industrial') DEFAULT NULL COMMENT 'Required only for Land Property category',
+    location VARCHAR(200) NOT NULL,
+    landmark VARCHAR(200) DEFAULT NULL,
+    land_reference_arp VARCHAR(100) NOT NULL,
     contact_person VARCHAR(100) NOT NULL,
     contact_number VARCHAR(20) NOT NULL,
-    purpose TEXT NOT NULL COMMENT 'Client purpose and preferred date mentioned in text',
-    valid_id_data LONGBLOB DEFAULT NULL,
-    valid_id_type VARCHAR(50) DEFAULT NULL,
-    valid_id_name VARCHAR(255) DEFAULT NULL,
-    status ENUM('pending', 'scheduled', 'in_progress', 'completed', 'cancelled', 'declined') DEFAULT 'pending',
-    assigned_staff_id INT DEFAULT NULL,
-    notes TEXT DEFAULT NULL,
-    completed_at TIMESTAMP NULL DEFAULT NULL,
+    purpose_and_preferred_date TEXT NOT NULL COMMENT 'Client purpose and preferred date mentioned in text',
+    status ENUM('pending', 'accepted', 'declined', 'approved', 'scheduled', 'in_progress', 'completed', 'cancelled') DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    decline_reason TEXT DEFAULT NULL,
+    valid_id_data LONGTEXT DEFAULT NULL,
+    valid_id_type VARCHAR(100) DEFAULT NULL,
+    valid_id_name VARCHAR(255) DEFAULT NULL,
     
     INDEX idx_status (status),
     INDEX idx_inspection_category (inspection_category),
-    INDEX idx_requested_date (requested_inspection_date),
-    INDEX idx_assigned_staff (assigned_staff_id),
-    INDEX idx_created_at (created_at),
-    INDEX idx_email (email),
-    INDEX idx_category_date (inspection_category, requested_inspection_date),
-    INDEX idx_location_category (location(100), inspection_category),
-    
-    FOREIGN KEY (assigned_staff_id) REFERENCES users(id) ON DELETE SET NULL
+    INDEX idx_created_at (created_at)
 );
 
 -- ===================================================
@@ -101,9 +91,9 @@ CREATE TABLE IF NOT EXISTS scheduled_inspections (
     id INT PRIMARY KEY AUTO_INCREMENT,
     barangay VARCHAR(100) NOT NULL,
     inspection_date DATE NOT NULL,
-    request_count INT DEFAULT 1,
+    request_count INT NOT NULL,
     notes TEXT DEFAULT NULL,
-    status ENUM('scheduled', 'completed', 'cancelled') DEFAULT 'scheduled',
+    status VARCHAR(20) DEFAULT 'scheduled',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
@@ -138,8 +128,9 @@ CREATE TABLE IF NOT EXISTS holidays (
     name VARCHAR(100) NOT NULL,
     date DATE NOT NULL,
     is_recurring BOOLEAN DEFAULT FALSE,
-    description TEXT DEFAULT NULL,
+    month_day VARCHAR(5) DEFAULT NULL COMMENT 'MM-DD format for recurring holidays',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_date (date),
     INDEX idx_recurring (is_recurring)
@@ -150,8 +141,9 @@ CREATE TABLE IF NOT EXISTS blocked_dates (
     id INT PRIMARY KEY AUTO_INCREMENT,
     date DATE NOT NULL UNIQUE,
     reason TEXT NOT NULL,
-    created_by VARCHAR(100) DEFAULT 'Staff',
+    created_by VARCHAR(100) NOT NULL DEFAULT 'Staff',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     
     INDEX idx_date (date),
     INDEX idx_created_by (created_by),
@@ -167,14 +159,14 @@ CREATE TABLE IF NOT EXISTS announcements (
     id INT PRIMARY KEY AUTO_INCREMENT,
     subject VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
-    priority ENUM('low', 'normal', 'high', 'urgent') DEFAULT 'normal',
-    category VARCHAR(50) DEFAULT 'general',
+    priority ENUM('normal', 'high', 'urgent') DEFAULT 'normal',
+    category ENUM('general', 'system', 'maintenance', 'policy', 'emergency', 'training') DEFAULT 'general',
     expiry_date DATE DEFAULT NULL,
     target_all BOOLEAN DEFAULT TRUE,
     target_staff BOOLEAN DEFAULT FALSE,
     target_admins BOOLEAN DEFAULT FALSE,
-    author_id VARCHAR(50) DEFAULT NULL,
-    author_name VARCHAR(100) DEFAULT NULL,
+    author_id VARCHAR(50) NOT NULL,
+    author_name VARCHAR(100) NOT NULL,
     is_active BOOLEAN DEFAULT TRUE,
     view_count INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -190,7 +182,7 @@ CREATE TABLE IF NOT EXISTS announcements (
 -- Announcement read tracking
 CREATE TABLE IF NOT EXISTS announcement_reads (
     id INT PRIMARY KEY AUTO_INCREMENT,
-    user_id INT NOT NULL,
+    user_id VARCHAR(50) NOT NULL,
     announcement_id INT NOT NULL,
     read_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     
@@ -198,7 +190,6 @@ CREATE TABLE IF NOT EXISTS announcement_reads (
     INDEX idx_user_id (user_id),
     INDEX idx_announcement_id (announcement_id),
     
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (announcement_id) REFERENCES announcements(id) ON DELETE CASCADE
 );
 
@@ -299,22 +290,18 @@ INSERT IGNORE INTO schema_info (version, description) VALUES
 -- Performance Optimization Views (Optional)
 -- ===================================================
 
--- View for active assessment requests with staff information
+-- View for active assessment requests
 CREATE OR REPLACE VIEW active_assessment_requests AS
 SELECT 
     ar.id,
     ar.name,
     ar.email,
     ar.inspection_category,
-    ar.requested_inspection_date,
     ar.property_classification,
     ar.location,
     ar.status,
-    ar.created_at,
-    CONCAT(u.first_name, ' ', u.last_name) as assigned_staff_name,
-    u.username as staff_username
+    ar.created_at
 FROM assessment_requests ar
-LEFT JOIN users u ON ar.assigned_staff_id = u.id
 WHERE ar.status != 'completed' AND ar.status != 'cancelled';
 
 -- View for system statistics
