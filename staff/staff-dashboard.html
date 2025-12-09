@@ -6834,7 +6834,10 @@ class StaffApp {
             acceptedRequests.forEach(request => {
                 const row = document.createElement('tr');
                 row.setAttribute('data-barangay', request.location || '');
-                const formattedDate = new Date(request.created_at).toLocaleDateString();
+                // Add 8 hours to convert UTC to Philippine time
+                const dateUTC = new Date(request.created_at);
+                const datePH = new Date(dateUTC.getTime() + (8 * 60 * 60 * 1000));
+                const formattedDate = datePH.toLocaleDateString();
                 
                 row.innerHTML = `
                     <td>#${request.id}</td>
@@ -6919,7 +6922,10 @@ class StaffApp {
             // Populate table with real data from database
             pendingRequests.forEach(request => {
                 const row = document.createElement('tr');
-                const formattedDate = new Date(request.created_at).toLocaleDateString();
+                // Add 8 hours to convert UTC to Philippine time
+                const dateUTC = new Date(request.created_at);
+                const datePH = new Date(dateUTC.getTime() + (8 * 60 * 60 * 1000));
+                const formattedDate = datePH.toLocaleDateString();
                 
                 row.innerHTML = `
                     <td>#${request.id}</td>
@@ -7155,11 +7161,21 @@ class StaffApp {
             };
 
             // Prepare form data using correct database field names
+            // Add 8 hours to convert UTC to Philippine time
+            let submissionDate;
+            if (requestData.created_at) {
+                const dateUTC = new Date(requestData.created_at);
+                const datePH = new Date(dateUTC.getTime() + (8 * 60 * 60 * 1000));
+                submissionDate = datePH.toLocaleDateString();
+            } else {
+                submissionDate = new Date().toLocaleDateString();
+            }
+            
             const formData = {
                 request_id: requestData.id,
                 category: requestData.inspection_category || 'Land Property Assessment',
                 property_address: requestData.location || 'N/A',
-                submission_date: requestData.created_at ? new Date(requestData.created_at).toLocaleDateString() : new Date().toLocaleDateString()
+                submission_date: submissionDate
             };
 
             console.log('Prepared email data:', { clientData, formData, declineReason });
@@ -9154,7 +9170,10 @@ async function viewRequestDetails(requestId) {
 }
 
 function showRequestDetailsModal(request) {
-    const formattedDate = new Date(request.created_at).toLocaleDateString('en-US', {
+    // Add 8 hours to convert UTC to Philippine time
+    const dateUTC = new Date(request.created_at);
+    const datePH = new Date(dateUTC.getTime() + (8 * 60 * 60 * 1000));
+    const formattedDate = datePH.toLocaleDateString('en-US', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
