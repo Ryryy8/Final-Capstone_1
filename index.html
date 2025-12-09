@@ -2085,7 +2085,8 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
         <div class="modal-content">
             <span class="close-getstarted">&times;</span>
             <h2>Inspection Request Form</h2>
-            <form class="getstarted-form">
+            <form class="getstarted-form" enctype="multipart/form-data">
+                <input type="hidden" name="MAX_FILE_SIZE" value="5242880">
                 <label for="clientName"> Full Name</label>
                 <input type="text" id="clientName" name="clientName" required>
 
@@ -2215,6 +2216,9 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
 
                 <label for="validId">Attach Valid ID</label>
                 <input type="file" id="validId" name="validId" accept="image/*,.pdf" required>
+                <button type="button" id="clearFile" style="margin-top: 8px; padding: 6px 12px; font-size: 0.85rem; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer; display: none;">
+                    Remove File
+                </button>
 
                 <!-- Terms and Conditions -->
                 <div class="terms-section" style="margin: 24px 0 16px 0;">
@@ -2243,8 +2247,8 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
     </div>
 
     <!-- Professional Request Submission Success Modal -->
-    <div id="requestSuccessModal" class="modal" style="display: none; z-index: 10003; backdrop-filter: blur(4px);">
-        <div class="modal-content" style="max-width: 460px; text-align: center; border-radius: 12px; box-shadow: 0 24px 80px rgba(0,0,0,0.15); border: 1px solid #e9ecef; background: white; overflow: hidden;">
+    <div id="requestSuccessModal" class="modal" style="display: none; z-index: 10003; backdrop-filter: blur(4px); overflow-y: auto; align-items: flex-start; padding-top: 2rem; padding-bottom: 2rem;">
+        <div class="modal-content" style="max-width: 460px; text-align: center; border-radius: 12px; box-shadow: 0 24px 80px rgba(0,0,0,0.15); border: 1px solid #e9ecef; background: white; overflow: visible; margin: 2rem auto; max-height: none;">
             
             <!-- Success Icon Header -->
             <div style="padding: 2rem 2rem 1.5rem 2rem; background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);">
@@ -2675,6 +2679,46 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             }
         }
     });
+});
+
+// File upload handling - prevent clearing when cancel is clicked
+let selectedFile = null;
+const fileInput = document.getElementById('validId');
+const clearFileBtn = document.getElementById('clearFile');
+
+fileInput.addEventListener('change', function(e) {
+    if (this.files && this.files.length > 0) {
+        // User selected a new file
+        const file = this.files[0];
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        
+        // Check file size before accepting
+        if (file.size > maxSize) {
+            alert('File size too large! Maximum allowed size is 5MB.\n\nYour file: ' + (file.size / 1024 / 1024).toFixed(2) + 'MB\n\nPlease compress or resize your image and try again.');
+            this.value = ''; // Clear the invalid file
+            if (selectedFile) {
+                // Restore previous valid file if exists
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(selectedFile);
+                this.files = dataTransfer.files;
+            }
+            return;
+        }
+        
+        selectedFile = file;
+        clearFileBtn.style.display = 'inline-block';
+    } else if (selectedFile) {
+        // User clicked cancel, restore the previous file
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(selectedFile);
+        fileInput.files = dataTransfer.files;
+    }
+});
+
+clearFileBtn.addEventListener('click', function() {
+    selectedFile = null;
+    fileInput.value = '';
+    clearFileBtn.style.display = 'none';
 });
 
 // Mobile menu toggle

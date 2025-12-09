@@ -1,0 +1,28 @@
+# AssessPro - Apache Configuration
+# Increase PHP upload limits for file attachments
+
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+php_value memory_limit 128M
+php_value max_execution_time 300
+php_value max_input_time 300
+
+# Enable error reporting for debugging (disable in production)
+php_flag display_errors Off
+php_flag log_errors On
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-XSS-Protection "1; mode=block"
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "\.(htaccess|htpasswd|ini|log|sql|md)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
