@@ -4369,8 +4369,11 @@ class AdminAnnouncementManager {
         element.className = `announcement-item ${announcement.priority} ${!isRead ? 'unread' : ''}`;
         element.setAttribute('data-id', announcement.id);
         
-        const date = new Date(announcement.timestamp).toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        // Add 8 hours to convert UTC to Philippine time
+        const dateUTC = new Date(announcement.timestamp);
+        const datePH = new Date(dateUTC.getTime() + (8 * 60 * 60 * 1000));
+        const date = datePH.toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
         });
 
         element.innerHTML = `

@@ -3004,10 +3004,6 @@ body {
                                 <div class="stat-content">
                                     <span class="value metric-value" id="totalInspections">0</span>
                                     <span class="label">Total Requests</span>
-                                    <span class="trend metric-trend" id="totalTrend">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        <span>Loading...</span>
-                                    </span>
                                 </div>
                             </div>
                             <div class="stat-card warning" data-metric="pending-requests">
@@ -3017,10 +3013,6 @@ body {
                                 <div class="stat-content">
                                     <span class="value metric-value" id="pendingInspections">0</span>
                                     <span class="label">Scheduled Inspections</span>
-                                    <span class="trend metric-trend" id="pendingTrend">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        <span>Loading...</span>
-                                    </span>
                                 </div>
                             </div>
                             <div class="stat-card success" data-metric="completed-requests">
@@ -3030,10 +3022,6 @@ body {
                                 <div class="stat-content">
                                     <span class="value metric-value" id="completedInspections">0</span>
                                     <span class="label">Completed</span>
-                                    <span class="trend metric-trend" id="completedTrend">
-                                        <i class="fas fa-spinner fa-spin"></i>
-                                        <span>Loading...</span>
-                                    </span>
                                 </div>
                             </div>
                             <div class="stat-card info" data-metric="top-barangay">
@@ -6133,8 +6121,11 @@ class HeadApp {
         item.classList.add('announcement-item');
         item.setAttribute('data-id', announcement.id);
         
-        const date = new Date(announcement.timestamp).toLocaleDateString('en-US', {
-            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        // Add 8 hours to convert UTC to Philippine time
+        const dateUTC = new Date(announcement.timestamp);
+        const datePH = new Date(dateUTC.getTime() + (8 * 60 * 60 * 1000));
+        const date = datePH.toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
         });
         
         const priority = announcement.priority || 'normal';

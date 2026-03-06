@@ -5041,16 +5041,15 @@ body {
                             <table class="data-table" style="width: 100%; border-collapse: collapse;">
                                 <thead style="background: #f8f9fa;">
                                     <tr>
-                                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #eee;">Date</th>
-                                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #eee;">Address</th>
-                                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #eee;">Category</th>
-                                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #eee;">Status</th>
-                                        <th style="padding: 1rem; text-align: left; font-weight: 600; color: #555; border-bottom: 1px solid #eee;">Actions</th>
+                                        <th style="padding: 1rem; text-align: center; font-weight: 600; color: #555; border-bottom: 1px solid #eee;">DATE</th>
+                                        <th style="padding: 1rem; text-align: center; font-weight: 600; color: #555; border-bottom: 1px solid #eee;">ADDRESS</th>
+                                        <th style="padding: 1rem; text-align: center; font-weight: 600; color: #555; border-bottom: 1px solid #eee;">STATUS</th>
+                                        <th style="padding: 1rem; text-align: center; font-weight: 600; color: #555; border-bottom: 1px solid #eee;">ACTIONS</th>
                                     </tr>
                                 </thead>
                                 <tbody id="inspection-history-table-body">
                                     <tr>
-                                        <td colspan="5" style="padding: 2rem; text-align: center; color: #666;">
+                                        <td colspan="4" style="padding: 2rem; text-align: center; color: #666;">
                                             <i class="fas fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 0.5rem;"></i>
                                             <br>Loading inspection history...
                                         </td>
@@ -5638,7 +5637,12 @@ class StaffAnnouncementManager {
     createAnnouncementHTML(announcement) {
         // Use the backend's isRead field instead of local storage
         const isRead = announcement.isRead || false;
-        const timeAgo = this.getTimeAgo(new Date(announcement.createdAt || announcement.created_at));
+        // Add 8 hours to convert UTC to Philippine time
+        const dateUTC = new Date(announcement.createdAt || announcement.created_at);
+        const datePH = new Date(dateUTC.getTime() + (8 * 60 * 60 * 1000));
+        const dateFormatted = datePH.toLocaleDateString('en-US', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
         
         const categoryIcons = {
             general: 'fas fa-info-circle',
@@ -5681,7 +5685,7 @@ class StaffAnnouncementManager {
                 <div class="announcement-footer">
                     <small>
                         <i class="fas fa-user"></i> ${announcement.authorName || announcement.author_name || 'Head Assessor'} • 
-                        <i class="fas fa-clock"></i> ${timeAgo}
+                        <i class="fas fa-calendar"></i> ${dateFormatted}
                     </small>
                     ${isRead ? '<i class="fas fa-check-circle" style="color: #10b981;"></i>' : ''}
                 </div>
@@ -5880,7 +5884,9 @@ class StaffAnnouncementManager {
     }
 
     getTimeAgo(date) {
-        const now = new Date();
+        // Get current time and add 8 hours to convert to Philippine time
+        const nowUTC = new Date();
+        const now = new Date(nowUTC.getTime() + (8 * 60 * 60 * 1000));
         const diff = now - date;
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(minutes / 60);
@@ -11539,25 +11545,16 @@ class InspectionHistoryManager {
 
                 const row = `
                     <tr data-inspection-id="${inspection.id}">
-                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">${date}</td>
-                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">${sourceIcon}${inspection.property_address}</td>
-                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
-                            <span style="color: ${
-                                ((inspection.inspection_category || inspection.assessment_type) === 'Land Property' || 
-                                 (inspection.inspection_category || inspection.assessment_type) === 'Property') ? '#6c757d' : 
-                                (inspection.inspection_category || inspection.assessment_type) === 'Machinery' ? '#007bff' : '#28a745'
-                            }; font-weight: 500;">
-                                ${(inspection.inspection_category || inspection.assessment_type) === 'Property' ? 'Land Property' : (inspection.inspection_category || inspection.assessment_type || 'N/A')}
-                            </span>
-                        </td>
-                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
+                        <td style="padding: 1rem; border-bottom: 1px solid #eee; text-align: center;">${date}</td>
+                        <td style="padding: 1rem; border-bottom: 1px solid #eee; text-align: center;">${sourceIcon}${inspection.property_address}</td>
+                        <td style="padding: 1rem; border-bottom: 1px solid #eee; text-align: center;">
                             <span class="status-badge ${statusClass}" style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 500;">
                                 <i class="fas ${statusIcon}"></i>
                                 ${inspection.status.charAt(0).toUpperCase() + inspection.status.slice(1)}
                             </span>
                         </td>
-                        <td style="padding: 1rem; border-bottom: 1px solid #eee;">
-                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <td style="padding: 1rem; border-bottom: 1px solid #eee; text-align: center;">
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; justify-content: center;">
                                 <button class="btn btn-sm btn-primary" onclick="inspectionHistoryManager.viewInspectionDetails('${inspection.id}')" 
                                         style="padding: 0.5rem 1rem; background: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">
                                     <i class="fas fa-eye" style="margin-right: 0.5rem;"></i>
